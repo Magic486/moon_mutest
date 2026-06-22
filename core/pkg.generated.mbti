@@ -1,0 +1,136 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "yelfs/moon_mutest/core"
+
+import {
+  "moonbitlang/core/debug",
+  "moonbitlang/core/json",
+}
+
+// Values
+pub fn apply_mutation(String, MutationCandidate) -> String
+
+pub fn boundary_literal_rules() -> Array[MutationRule]
+
+pub fn default_rules() -> Array[MutationRule]
+
+pub fn discover(String, file? : String) -> Array[MutationCandidate]
+
+pub fn discover_filtered(String, MutationFilter, file? : String) -> Array[MutationCandidate]
+
+pub fn discover_with_profile(String, RuleProfile, file? : String) -> Array[MutationCandidate]
+
+pub fn discover_with_rules(String, ArrayView[MutationRule], file? : String) -> Array[MutationCandidate]
+
+pub fn filter_candidates(ArrayView[MutationCandidate], MutationFilter) -> Array[MutationCandidate]
+
+pub fn format_mutant_patch(Mutant) -> String
+
+pub fn format_rule_catalog(profile? : RuleProfile) -> String
+
+pub fn generate_mutants(String, file? : String) -> Array[Mutant]
+
+pub fn mutant_by_id(String, Int, file? : String) -> Mutant?
+
+pub fn mutation_kind_label(MutationKind) -> String
+
+pub fn parse_rule_profile(String) -> RuleProfile?
+
+pub fn profile_label(RuleProfile) -> String
+
+pub fn rule(MutationKind, String, String, String) -> MutationRule
+
+pub fn rule_catalog() -> Array[RuleCatalogEntry]
+
+pub fn rules_for_profile(RuleProfile) -> Array[MutationRule]
+
+pub fn summarize(String, file? : String) -> MutationSummary
+
+pub fn summarize_candidates(String, ArrayView[MutationCandidate]) -> MutationSummary
+
+pub fn validate_rules(ArrayView[MutationRule]) -> RuleSetValidation
+
+// Errors
+
+// Types and methods
+pub(all) struct Mutant {
+  candidate : MutationCandidate
+  source : String
+} derive(Eq, ToJson, @debug.Debug)
+
+pub(all) struct MutationCandidate {
+  id : Int
+  rule : MutationRule
+  span : SourceSpan
+  original : String
+  replacement : String
+  line_text : String
+} derive(Eq, ToJson, @debug.Debug)
+
+pub(all) struct MutationFilter {
+  kinds : Array[MutationKind]
+  labels : Array[String]
+  line_start : Int?
+  line_end : Int?
+} derive(Eq, ToJson, @debug.Debug)
+pub fn MutationFilter::all() -> Self
+pub fn MutationFilter::by_kind(MutationKind) -> Self
+pub fn MutationFilter::by_label(String) -> Self
+pub fn MutationFilter::lines(start~ : Int, end~ : Int) -> Self
+
+pub(all) enum MutationKind {
+  BooleanLiteral
+  EqualityOperator
+  RelationalOperator
+  ArithmeticOperator
+  LogicalOperator
+  NumericLiteral
+} derive(Eq, ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct MutationRule {
+  kind : MutationKind
+  from : String
+  to : String
+  label : String
+} derive(Eq, ToJson, @debug.Debug)
+
+pub(all) struct MutationSummary {
+  file : String
+  candidate_count : Int
+  boolean_count : Int
+  equality_count : Int
+  relational_count : Int
+  arithmetic_count : Int
+  logical_count : Int
+  numeric_count : Int
+} derive(Eq, ToJson, @debug.Debug)
+
+pub(all) struct RuleCatalogEntry {
+  rule : MutationRule
+  profile : RuleProfile
+  description : String
+} derive(Eq, ToJson, @debug.Debug)
+
+pub(all) enum RuleProfile {
+  BasicProfile
+  BoundaryProfile
+  ExperimentalProfile
+} derive(Eq, ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct RuleSetValidation {
+  rule_count : Int
+  duplicate_labels : Array[String]
+  empty_tokens : Array[String]
+} derive(Eq, ToJson, @debug.Debug)
+
+pub(all) struct SourceSpan {
+  file : String
+  start : Int
+  end : Int
+  line : Int
+  column : Int
+} derive(Eq, ToJson, @debug.Debug)
+
+// Type aliases
+
+// Traits
+
