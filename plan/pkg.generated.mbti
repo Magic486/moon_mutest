@@ -1,0 +1,115 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "yelfs/moon_mutest/plan"
+
+import {
+  "moonbitlang/core/debug",
+  "yelfs/moon_mutest/core",
+}
+
+// Values
+pub fn apply_mutation(String, @core.MutationCandidate) -> String
+
+pub fn classify_workspace_file(String, WorkspaceFileSpec) -> WorkspaceFileDecision
+
+pub fn discover_filtered(String, @core.MutationFilter, file? : String) -> Array[@core.MutationCandidate]
+
+pub fn format_project_mutation(ProjectMutation) -> String
+
+pub fn format_project_plan(ProjectMutationPlan) -> String
+
+pub fn format_project_plan_summary(ProjectMutationPlan) -> String
+
+pub fn format_workspace_file_category(WorkspaceFileCategory) -> String
+
+pub fn format_workspace_selection_report(WorkspaceSelectionReport) -> String
+
+pub fn plan_project(ArrayView[SourceFile]) -> ProjectMutationPlan
+
+pub fn plan_project_filtered(ArrayView[SourceFile], @core.MutationFilter) -> ProjectMutationPlan
+
+pub fn project_mutation_by_id(ProjectMutationPlan, Int) -> ProjectMutation?
+
+pub fn select_workspace_files(ArrayView[SourceFile], WorkspaceFileSpec) -> Array[SourceFile]
+
+pub fn source_file(String, String) -> SourceFile
+
+pub fn summarize_candidates(String, ArrayView[@core.MutationCandidate]) -> @core.MutationSummary
+
+pub fn summarize_workspace_selection(ArrayView[SourceFile], WorkspaceFileSpec) -> WorkspaceSelectionReport
+
+// Errors
+
+// Types and methods
+pub(all) struct FileMutationPlan {
+  file : String
+  file_index : Int
+  start_id : Int
+  end_id : Int
+  summary : @core.MutationSummary
+  candidates : Array[@core.MutationCandidate]
+} derive(Eq, ToJson, @debug.Debug)
+
+pub(all) struct ProjectMutation {
+  global_id : Int
+  file_index : Int
+  file : String
+  local_id : Int
+  candidate : @core.MutationCandidate
+  mutated_source : String
+} derive(Eq, ToJson, @debug.Debug)
+
+pub(all) struct ProjectMutationPlan {
+  file_count : Int
+  mutation_count : Int
+  files : Array[FileMutationPlan]
+  mutations : Array[ProjectMutation]
+} derive(Eq, ToJson, @debug.Debug)
+
+pub(all) struct SourceFile {
+  path : String
+  content : String
+} derive(Eq, ToJson, @debug.Debug)
+
+pub(all) enum WorkspaceFileCategory {
+  SourceFileCategory
+  TestFileCategory
+  GeneratedFileCategory
+  ExcludedFileCategory
+} derive(Eq, ToJson, @debug.Debug)
+
+pub(all) struct WorkspaceFileDecision {
+  path : String
+  included : Bool
+  category : WorkspaceFileCategory
+  reason : String
+} derive(Eq, ToJson, @debug.Debug)
+
+pub(all) struct WorkspaceFileSpec {
+  include_suffixes : Array[String]
+  exclude_segments : Array[String]
+  exclude_suffixes : Array[String]
+  include_tests : Bool
+  include_generated : Bool
+} derive(Eq, ToJson, @debug.Debug)
+pub fn WorkspaceFileSpec::moonbit_default() -> Self
+pub fn WorkspaceFileSpec::with_tests() -> Self
+
+pub(all) struct WorkspaceSelectionReport {
+  total_files : Int
+  included_files : Int
+  excluded_files : Int
+  source_files : Int
+  test_files : Int
+  generated_files : Int
+  decisions : Array[WorkspaceFileDecision]
+} derive(Eq, ToJson, @debug.Debug)
+
+// Type aliases
+pub using @core {type MutationCandidate}
+
+pub using @core {type MutationFilter}
+
+pub using @core {type MutationSummary}
+
+// Traits
+
