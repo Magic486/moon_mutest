@@ -1,0 +1,10 @@
+import {
+  "moonbitlang/core/env",
+  "moonbitlang/core/json",
+  "moonbitlang/x/fs",
+  "yelfs/moon_mutest/core",
+  "yelfs/moon_mutest/plan",
+  "yelfs/moon_mutest/run",
+}
+
+supported_targets = "+js"
