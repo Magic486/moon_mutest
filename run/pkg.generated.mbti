@@ -1,0 +1,417 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "yelfs/moon_mutest/run"
+
+import {
+  "moonbitlang/core/debug",
+  "moonbitlang/core/json",
+  "yelfs/moon_mutest/core",
+  "yelfs/moon_mutest/plan",
+}
+
+// Values
+pub fn apply_edit(String, TextEdit) -> String?
+
+pub fn apply_mutation(String, @core.MutationCandidate) -> String
+
+pub fn baseline_can_run(BaselineReport) -> Bool
+
+pub fn baseline_outcome_label(BaselineOutcome) -> String
+
+pub fn build_batch_plan(ExecutionPlan, BatchStrategy) -> BatchPlan
+
+pub fn build_execution_plan(ArrayView[@plan.SourceFile], MutestConfig) -> ExecutionPlan
+
+pub fn build_execution_plan_with_profile(ArrayView[@plan.SourceFile], MutestConfig, @core.RuleProfile) -> ExecutionPlan
+
+pub fn build_selected_batch_plan(ExecutionPlan, SelectionMode, BatchStrategy) -> BatchPlan
+
+pub fn classify_baseline(ArrayView[RunnerCommand], ArrayView[CommandResult]) -> BaselineReport
+
+pub fn classify_command_result(@core.MutationCandidate, CommandResult) -> MutantResult
+
+pub fn classify_project_sequence(@plan.ProjectMutation, ArrayView[CommandResult]) -> ProjectMutantResult
+
+pub fn classify_sequence(@core.MutationCandidate, ArrayView[CommandResult]) -> MutantResult
+
+pub fn command_failure(CommandPhase, Int, stdout? : String, stderr? : String) -> CommandResult
+
+pub fn command_phase_label(CommandPhase) -> String
+
+pub fn command_success(CommandPhase) -> CommandResult
+
+pub fn command_timeout(CommandPhase, detail? : String) -> CommandResult
+
+pub fn config_to_json_string(MutestConfig, indent? : Int) -> String
+
+pub fn default_commands() -> Array[RunnerCommand]
+
+pub fn discover_with_rules(String, ArrayView[@core.MutationRule], file? : String) -> Array[@core.MutationCandidate]
+
+pub fn edit_for_candidate(@core.MutationCandidate) -> TextEdit
+
+pub fn edit_for_project_mutation(@plan.ProjectMutation) -> TextEdit
+
+pub fn estimate_execution_timeout_ms(MutationExecution) -> Int
+
+pub fn evaluate_quality_gate(ProjectRunReport, QualityGate) -> QualityGateReport
+
+pub fn evaluate_quality_gate_after_baseline(ProjectRunReport, QualityGate, BaselineReport) -> QualityGateReport
+
+pub fn execution_by_mutation_id(ExecutionPlan, Int) -> MutationExecution?
+
+pub fn filter_candidates(ArrayView[@core.MutationCandidate], @core.MutationFilter) -> Array[@core.MutationCandidate]
+
+pub fn format_baseline_report(BaselineReport) -> String
+
+pub fn format_batch_plan(BatchPlan) -> String
+
+pub fn format_batch_strategy(BatchStrategy) -> String
+
+pub fn format_config(MutestConfig) -> String
+
+pub fn format_execution_plan(ExecutionPlan) -> String
+
+pub fn format_markdown_project_plan(@plan.ProjectMutationPlan) -> String
+
+pub fn format_markdown_run_report(ProjectRunReport) -> String
+
+pub fn format_quality_gate(QualityGate) -> String
+
+pub fn format_quality_gate_report(QualityGateReport) -> String
+
+pub fn format_result(MutantResult) -> String
+
+pub fn format_run_report(MutationRunReport) -> String
+
+pub fn format_runner_command(RunnerCommand) -> String
+
+pub fn format_runner_script(RunnerScript) -> String
+
+pub fn format_selection_mode(SelectionMode) -> String
+
+pub fn format_selection_report(SelectionReport) -> String
+
+pub fn format_unified_diff(String, Int, String, String) -> String
+
+pub fn generate_runner_script(ExecutionPlan, ShellDialect) -> RunnerScript
+
+pub fn generate_selected_runner_script(ExecutionPlan, SelectionMode, ShellDialect) -> RunnerScript
+
+pub fn invert_edit(TextEdit) -> TextEdit
+
+pub fn mutation_kind_label(@core.MutationKind) -> String
+
+pub fn outcome_label(MutantOutcome) -> String
+
+pub fn parse_config_json(String) -> MutestConfig raise
+
+pub fn plan_project_with_rules(ArrayView[@plan.SourceFile], @core.MutationFilter, ArrayView[@core.MutationRule]) -> @plan.ProjectMutationPlan
+
+pub fn preview_candidate_patch(String, @core.MutationCandidate) -> PatchPreview?
+
+pub fn preview_project_mutation_patch(String, @plan.ProjectMutation) -> PatchPreview?
+
+pub fn project_result(@plan.ProjectMutation, MutantOutcome, detail? : String) -> ProjectMutantResult
+
+pub fn quality_gate_status_label(QualityGateStatus) -> String
+
+pub fn report_format_label(ReportFormat) -> String
+
+pub fn result(@core.MutationCandidate, MutantOutcome, detail? : String) -> MutantResult
+
+pub fn rules_for_profile(@core.RuleProfile) -> Array[@core.MutationRule]
+
+pub fn select_executions(ExecutionPlan, SelectionMode) -> Array[MutationExecution]
+
+pub fn select_project_mutations(@plan.ProjectMutationPlan, SelectionMode) -> Array[@plan.ProjectMutation]
+
+pub fn shell_dialect_label(ShellDialect) -> String
+
+pub fn skip_execution_results_for_baseline(ExecutionPlan, BaselineReport) -> Array[ProjectMutantResult]
+
+pub fn summarize_candidates(String, ArrayView[@core.MutationCandidate]) -> @core.MutationSummary
+
+pub fn summarize_execution_selection(ExecutionPlan, SelectionMode) -> SelectionReport
+
+pub fn summarize_project_run(@plan.ProjectMutationPlan, ArrayView[ProjectMutantResult]) -> ProjectRunReport
+
+pub fn summarize_project_selection(@plan.ProjectMutationPlan, SelectionMode) -> SelectionReport
+
+pub fn summarize_results(String, ArrayView[MutantResult]) -> MutationRunReport
+
+pub fn validate_batch_strategy(BatchStrategy) -> BatchValidation
+
+pub fn validate_edit(String, TextEdit) -> Bool
+
+pub fn validate_selection_mode(SelectionMode) -> SelectionValidation
+
+// Errors
+
+// Types and methods
+pub(all) enum BaselineOutcome {
+  BaselinePassed
+  BaselineFailed
+  BaselineTimedOut
+  BaselineIncomplete
+} derive(Eq, ToJson, @debug.Debug)
+
+pub(all) struct BaselineReport {
+  outcome : BaselineOutcome
+  command_count : Int
+  executed_count : Int
+  failed_index : Int?
+  failed_phase : CommandPhase?
+  can_run_mutants : Bool
+  detail : String
+} derive(Eq, ToJson, @debug.Debug)
+
+pub(all) struct BatchPlan {
+  strategy : BatchStrategy
+  selection : SelectionMode
+  batch_count : Int
+  execution_count : Int
+  command_count : Int
+  estimated_timeout_ms : Int
+  valid : Bool
+  message : String
+  batches : Array[ExecutionBatch]
+} derive(Eq, ToJson, @debug.Debug)
+
+pub(all) enum BatchStrategy {
+  OneMutantPerBatch
+  FixedBatchSize(Int)
+  TargetBatchMillis(Int)
+} derive(Eq, ToJson, @debug.Debug)
+
+pub(all) struct BatchValidation {
+  valid : Bool
+  message : String
+} derive(Eq, ToJson, @debug.Debug)
+
+pub(all) enum CommandPhase {
+  CheckPhase
+  TestPhase
+} derive(Eq, ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct CommandResult {
+  phase : CommandPhase
+  exit_code : Int?
+  stdout : String
+  stderr : String
+  timed_out : Bool
+} derive(Eq, ToJson, @debug.Debug)
+
+pub(all) struct ExecutionBatch {
+  batch_id : Int
+  start_index : Int
+  end_index : Int
+  execution_count : Int
+  command_count : Int
+  estimated_timeout_ms : Int
+  executions : Array[MutationExecution]
+} derive(Eq, ToJson, @debug.Debug)
+
+pub(all) struct ExecutionPlan {
+  config : MutestConfig
+  project : @plan.ProjectMutationPlan
+  executions : Array[MutationExecution]
+  truncated : Bool
+} derive(Eq, ToJson, @debug.Debug)
+
+pub(all) struct FileRunReport {
+  file : String
+  total : Int
+  killed : Int
+  survived : Int
+  compile_error : Int
+  timeout : Int
+  skipped : Int
+  score_percent : Int
+} derive(Eq, ToJson, @debug.Debug)
+
+pub(all) enum MutantOutcome {
+  Killed
+  Survived
+  CompileError
+  Timeout
+  Skipped
+} derive(Eq, ToJson, @debug.Debug)
+
+pub(all) struct MutantResult {
+  candidate : @core.MutationCandidate
+  outcome : MutantOutcome
+  detail : String
+} derive(Eq, ToJson, @debug.Debug)
+
+pub(all) struct MutationExecution {
+  mutation : @plan.ProjectMutation
+  edit : TextEdit
+  restore_edit : TextEdit
+  commands : Array[RunnerCommand]
+} derive(Eq, ToJson, @debug.Debug)
+
+pub(all) struct MutationRunReport {
+  file : String
+  total : Int
+  killed : Int
+  survived : Int
+  compile_error : Int
+  timeout : Int
+  skipped : Int
+  score_percent : Int
+} derive(Eq, ToJson, @debug.Debug)
+
+pub(all) struct MutestConfig {
+  include_kinds : Array[@core.MutationKind]
+  include_labels : Array[String]
+  line_start : Int?
+  line_end : Int?
+  commands : Array[RunnerCommand]
+  fail_fast : Bool
+  max_mutants : Int?
+  report_format : ReportFormat
+} derive(Eq, ToJson, @debug.Debug, @json.FromJson)
+pub fn MutestConfig::default() -> Self
+pub fn MutestConfig::to_filter(Self) -> @core.MutationFilter
+
+pub(all) struct PatchPreview {
+  file : String
+  line : Int
+  before : String
+  after : String
+  diff : String
+} derive(Eq, ToJson, @debug.Debug)
+
+pub(all) struct ProjectMutantResult {
+  mutation : @plan.ProjectMutation
+  outcome : MutantOutcome
+  detail : String
+} derive(Eq, ToJson, @debug.Debug)
+
+pub(all) struct ProjectRunReport {
+  file_count : Int
+  mutation_count : Int
+  killed : Int
+  survived : Int
+  compile_error : Int
+  timeout : Int
+  skipped : Int
+  score_percent : Int
+  files : Array[FileRunReport]
+  results : Array[ProjectMutantResult]
+} derive(Eq, ToJson, @debug.Debug)
+
+pub(all) struct QualityGate {
+  min_score_percent : Int
+  max_survived : Int?
+  max_compile_error : Int?
+  max_timeout : Int?
+  max_skipped : Int?
+} derive(Eq, ToJson, @debug.Debug)
+pub fn QualityGate::default() -> Self
+pub fn QualityGate::strict(min_score_percent? : Int) -> Self
+
+pub(all) struct QualityGateReport {
+  status : QualityGateStatus
+  score_percent : Int
+  scored_mutants : Int
+  total_mutants : Int
+  killed : Int
+  survived : Int
+  compile_error : Int
+  timeout : Int
+  skipped : Int
+  violations : Array[QualityGateViolation]
+  message : String
+} derive(Eq, ToJson, @debug.Debug)
+
+pub(all) enum QualityGateStatus {
+  GatePassed
+  GateFailed
+  GateNoSignal
+} derive(Eq, ToJson, @debug.Debug)
+
+pub(all) struct QualityGateViolation {
+  metric : String
+  actual : Int
+  limit : Int
+  message : String
+} derive(Eq, ToJson, @debug.Debug)
+
+pub(all) enum ReportFormat {
+  TextReport
+  MarkdownReport
+  JsonReport
+} derive(Eq, ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct RunnerCommand {
+  phase : CommandPhase
+  command : String
+  timeout_ms : Int
+} derive(Eq, ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct RunnerScript {
+  dialect : ShellDialect
+  selection : SelectionMode
+  mutant_count : Int
+  content : String
+} derive(Eq, ToJson, @debug.Debug)
+
+pub(all) enum SelectionMode {
+  AllMutants
+  FirstMutants(Int)
+  IdRange(start~ : Int, end~ : Int)
+  Shard(shard_index~ : Int, shard_count~ : Int)
+} derive(Eq, ToJson, @debug.Debug)
+
+pub(all) struct SelectionReport {
+  mode : SelectionMode
+  input_count : Int
+  selected_count : Int
+  skipped_count : Int
+  selected_ids : Array[Int]
+  valid : Bool
+  message : String
+} derive(Eq, ToJson, @debug.Debug)
+
+pub(all) struct SelectionValidation {
+  valid : Bool
+  message : String
+} derive(Eq, ToJson, @debug.Debug)
+
+pub(all) enum ShellDialect {
+  BashDialect
+  PowerShellDialect
+} derive(Eq, ToJson, @debug.Debug)
+
+pub(all) struct TextEdit {
+  file : String
+  start : Int
+  end : Int
+  original : String
+  replacement : String
+  line : Int
+  column : Int
+} derive(Eq, ToJson, @debug.Debug)
+
+// Type aliases
+pub using @plan {type FileMutationPlan}
+
+pub using @core {type MutationCandidate}
+
+pub using @core {type MutationFilter}
+
+pub using @core {type MutationKind}
+
+pub using @core {type MutationRule}
+
+pub using @plan {type ProjectMutation}
+
+pub using @plan {type ProjectMutationPlan}
+
+pub using @core {type RuleProfile}
+
+pub using @plan {type SourceFile}
+
+// Traits
+
