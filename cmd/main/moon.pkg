@@ -1,0 +1,13 @@
+import {
+  "moonbitlang/core/argparse",
+  "moonbitlang/core/env",
+  "moonbitlang/core/string",
+  "yelfs/moon_mutest" @mutest,
+  "yelfs/moon_mutest/runner",
+}
+
+supported_targets = "+js"
+
+options(
+  "is-main": true,
+)
