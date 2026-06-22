@@ -1,0 +1,328 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "yelfs/moon_mutest"
+
+import {
+  "yelfs/moon_mutest/core",
+  "yelfs/moon_mutest/io",
+  "yelfs/moon_mutest/plan",
+  "yelfs/moon_mutest/run",
+}
+
+// Values
+pub fn apply_edit(String, @run.TextEdit) -> String?
+
+pub fn apply_mutation(String, @core.MutationCandidate) -> String
+
+pub fn baseline_can_run(@run.BaselineReport) -> Bool
+
+pub fn baseline_outcome_label(@run.BaselineOutcome) -> String
+
+pub fn boundary_literal_rules() -> Array[@core.MutationRule]
+
+pub fn build_batch_plan(@run.ExecutionPlan, @run.BatchStrategy) -> @run.BatchPlan
+
+pub fn build_execution_plan(ArrayView[@plan.SourceFile], @run.MutestConfig) -> @run.ExecutionPlan
+
+pub fn build_execution_plan_with_profile(ArrayView[@plan.SourceFile], @run.MutestConfig, @core.RuleProfile) -> @run.ExecutionPlan
+
+pub fn build_selected_batch_plan(@run.ExecutionPlan, @run.SelectionMode, @run.BatchStrategy) -> @run.BatchPlan
+
+pub fn candidate_to_json_string(@core.MutationCandidate, indent? : Int) -> String
+
+pub fn classify_baseline(ArrayView[@run.RunnerCommand], ArrayView[@run.CommandResult]) -> @run.BaselineReport
+
+pub fn classify_command_result(@core.MutationCandidate, @run.CommandResult) -> @run.MutantResult
+
+pub fn classify_project_sequence(@plan.ProjectMutation, ArrayView[@run.CommandResult]) -> @run.ProjectMutantResult
+
+pub fn classify_sequence(@core.MutationCandidate, ArrayView[@run.CommandResult]) -> @run.MutantResult
+
+pub fn classify_workspace_file(String, @plan.WorkspaceFileSpec) -> @plan.WorkspaceFileDecision
+
+pub fn command_failure(@run.CommandPhase, Int, stdout? : String, stderr? : String) -> @run.CommandResult
+
+pub fn command_phase_label(@run.CommandPhase) -> String
+
+pub fn command_success(@run.CommandPhase) -> @run.CommandResult
+
+pub fn command_timeout(@run.CommandPhase, detail? : String) -> @run.CommandResult
+
+pub fn config_to_json_string(@run.MutestConfig, indent? : Int) -> String
+
+pub fn default_commands() -> Array[@run.RunnerCommand]
+
+pub fn default_rules() -> Array[@core.MutationRule]
+
+pub fn discover(String, file? : String) -> Array[@core.MutationCandidate]
+
+pub fn discover_filtered(String, @core.MutationFilter, file? : String) -> Array[@core.MutationCandidate]
+
+pub fn discover_with_profile(String, @core.RuleProfile, file? : String) -> Array[@core.MutationCandidate]
+
+pub fn discover_with_rules(String, ArrayView[@core.MutationRule], file? : String) -> Array[@core.MutationCandidate]
+
+pub fn edit_for_candidate(@core.MutationCandidate) -> @run.TextEdit
+
+pub fn edit_for_project_mutation(@plan.ProjectMutation) -> @run.TextEdit
+
+pub fn estimate_execution_timeout_ms(@run.MutationExecution) -> Int
+
+pub fn evaluate_quality_gate(@run.ProjectRunReport, @run.QualityGate) -> @run.QualityGateReport
+
+pub fn evaluate_quality_gate_after_baseline(@run.ProjectRunReport, @run.QualityGate, @run.BaselineReport) -> @run.QualityGateReport
+
+pub fn execution_by_mutation_id(@run.ExecutionPlan, Int) -> @run.MutationExecution?
+
+pub fn filter_candidates(ArrayView[@core.MutationCandidate], @core.MutationFilter) -> Array[@core.MutationCandidate]
+
+pub fn format_baseline_report(@run.BaselineReport) -> String
+
+pub fn format_batch_plan(@run.BatchPlan) -> String
+
+pub fn format_batch_strategy(@run.BatchStrategy) -> String
+
+pub fn format_candidate(@core.MutationCandidate) -> String
+
+pub fn format_candidate_list(ArrayView[@core.MutationCandidate]) -> String
+
+pub fn format_config(@run.MutestConfig) -> String
+
+pub fn format_execution_plan(@run.ExecutionPlan) -> String
+
+pub fn format_manifest(String, file? : String) -> String
+
+pub fn format_manifest_json(String, file? : String) -> String
+
+pub fn format_manifest_json_with_profile(String, @core.RuleProfile, file? : String) -> String
+
+pub fn format_manifest_with_profile(String, @core.RuleProfile, file? : String) -> String
+
+pub fn format_markdown_project_plan(@plan.ProjectMutationPlan) -> String
+
+pub fn format_markdown_run_report(@run.ProjectRunReport) -> String
+
+pub fn format_mutant_patch(@core.Mutant) -> String
+
+pub fn format_project_mutation(@plan.ProjectMutation) -> String
+
+pub fn format_project_plan(@plan.ProjectMutationPlan) -> String
+
+pub fn format_project_plan_summary(@plan.ProjectMutationPlan) -> String
+
+pub fn format_quality_gate(@run.QualityGate) -> String
+
+pub fn format_quality_gate_report(@run.QualityGateReport) -> String
+
+pub fn format_result(@run.MutantResult) -> String
+
+pub fn format_rule_catalog(profile? : @core.RuleProfile) -> String
+
+pub fn format_run_report(@run.MutationRunReport) -> String
+
+pub fn format_runner_command(@run.RunnerCommand) -> String
+
+pub fn format_runner_script(@run.RunnerScript) -> String
+
+pub fn format_selection_mode(@run.SelectionMode) -> String
+
+pub fn format_selection_report(@run.SelectionReport) -> String
+
+pub fn format_summary(@core.MutationSummary) -> String
+
+pub fn format_unified_diff(String, Int, String, String) -> String
+
+pub fn format_workspace_file_category(@plan.WorkspaceFileCategory) -> String
+
+pub fn format_workspace_selection_report(@plan.WorkspaceSelectionReport) -> String
+
+pub fn generate_mutants(String, file? : String) -> Array[@core.Mutant]
+
+pub fn generate_runner_script(@run.ExecutionPlan, @run.ShellDialect) -> @run.RunnerScript
+
+pub fn generate_selected_runner_script(@run.ExecutionPlan, @run.SelectionMode, @run.ShellDialect) -> @run.RunnerScript
+
+pub fn invert_edit(@run.TextEdit) -> @run.TextEdit
+
+pub fn manifest(String, file? : String) -> @io.MutationManifest
+
+pub fn manifest_to_json_string(@io.MutationManifest, indent? : Int) -> String
+
+pub fn manifest_with_profile(String, @core.RuleProfile, file? : String) -> @io.MutationManifest
+
+pub fn mutant_by_id(String, Int, file? : String) -> @core.Mutant?
+
+pub fn mutation_kind_label(@core.MutationKind) -> String
+
+pub fn outcome_label(@run.MutantOutcome) -> String
+
+pub fn parse_config_json(String) -> @run.MutestConfig raise
+
+pub fn parse_rule_profile(String) -> @core.RuleProfile?
+
+pub fn plan_project(ArrayView[@plan.SourceFile]) -> @plan.ProjectMutationPlan
+
+pub fn plan_project_filtered(ArrayView[@plan.SourceFile], @core.MutationFilter) -> @plan.ProjectMutationPlan
+
+pub fn plan_project_with_rules(ArrayView[@plan.SourceFile], @core.MutationFilter, ArrayView[@core.MutationRule]) -> @plan.ProjectMutationPlan
+
+pub fn preview_candidate_patch(String, @core.MutationCandidate) -> @run.PatchPreview?
+
+pub fn preview_project_mutation_patch(String, @plan.ProjectMutation) -> @run.PatchPreview?
+
+pub fn profile_label(@core.RuleProfile) -> String
+
+pub fn project_mutation_by_id(@plan.ProjectMutationPlan, Int) -> @plan.ProjectMutation?
+
+pub fn project_result(@plan.ProjectMutation, @run.MutantOutcome, detail? : String) -> @run.ProjectMutantResult
+
+pub fn quality_gate_status_label(@run.QualityGateStatus) -> String
+
+pub fn report_format_label(@run.ReportFormat) -> String
+
+pub fn result(@core.MutationCandidate, @run.MutantOutcome, detail? : String) -> @run.MutantResult
+
+pub fn rule(@core.MutationKind, String, String, String) -> @core.MutationRule
+
+pub fn rule_catalog() -> Array[@core.RuleCatalogEntry]
+
+pub fn rules_for_profile(@core.RuleProfile) -> Array[@core.MutationRule]
+
+pub fn select_executions(@run.ExecutionPlan, @run.SelectionMode) -> Array[@run.MutationExecution]
+
+pub fn select_project_mutations(@plan.ProjectMutationPlan, @run.SelectionMode) -> Array[@plan.ProjectMutation]
+
+pub fn select_workspace_files(ArrayView[@plan.SourceFile], @plan.WorkspaceFileSpec) -> Array[@plan.SourceFile]
+
+pub fn shell_dialect_label(@run.ShellDialect) -> String
+
+pub fn skip_execution_results_for_baseline(@run.ExecutionPlan, @run.BaselineReport) -> Array[@run.ProjectMutantResult]
+
+pub fn source_file(String, String) -> @plan.SourceFile
+
+pub fn summarize(String, file? : String) -> @core.MutationSummary
+
+pub fn summarize_candidates(String, ArrayView[@core.MutationCandidate]) -> @core.MutationSummary
+
+pub fn summarize_execution_selection(@run.ExecutionPlan, @run.SelectionMode) -> @run.SelectionReport
+
+pub fn summarize_project_run(@plan.ProjectMutationPlan, ArrayView[@run.ProjectMutantResult]) -> @run.ProjectRunReport
+
+pub fn summarize_project_selection(@plan.ProjectMutationPlan, @run.SelectionMode) -> @run.SelectionReport
+
+pub fn summarize_results(String, ArrayView[@run.MutantResult]) -> @run.MutationRunReport
+
+pub fn summarize_workspace_selection(ArrayView[@plan.SourceFile], @plan.WorkspaceFileSpec) -> @plan.WorkspaceSelectionReport
+
+pub fn validate_batch_strategy(@run.BatchStrategy) -> @run.BatchValidation
+
+pub fn validate_edit(String, @run.TextEdit) -> Bool
+
+pub fn validate_rules(ArrayView[@core.MutationRule]) -> @core.RuleSetValidation
+
+pub fn validate_selection_mode(@run.SelectionMode) -> @run.SelectionValidation
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+pub using @run {type BaselineOutcome}
+
+pub using @run {type BaselineReport}
+
+pub using @run {type BatchPlan}
+
+pub using @run {type BatchStrategy}
+
+pub using @run {type BatchValidation}
+
+pub using @run {type CommandPhase}
+
+pub using @run {type CommandResult}
+
+pub using @run {type ExecutionBatch}
+
+pub using @run {type ExecutionPlan}
+
+pub using @plan {type FileMutationPlan}
+
+pub using @run {type FileRunReport}
+
+pub using @core {type Mutant}
+
+pub using @run {type MutantOutcome}
+
+pub using @run {type MutantResult}
+
+pub using @core {type MutationCandidate}
+
+pub using @run {type MutationExecution}
+
+pub using @core {type MutationFilter}
+
+pub using @core {type MutationKind}
+
+pub using @io {type MutationManifest}
+
+pub using @core {type MutationRule}
+
+pub using @run {type MutationRunReport}
+
+pub using @core {type MutationSummary}
+
+pub using @run {type MutestConfig}
+
+pub using @run {type PatchPreview}
+
+pub using @run {type ProjectMutantResult}
+
+pub using @plan {type ProjectMutation}
+
+pub using @plan {type ProjectMutationPlan}
+
+pub using @run {type ProjectRunReport}
+
+pub using @run {type QualityGate}
+
+pub using @run {type QualityGateReport}
+
+pub using @run {type QualityGateStatus}
+
+pub using @run {type QualityGateViolation}
+
+pub using @run {type ReportFormat}
+
+pub using @core {type RuleCatalogEntry}
+
+pub using @core {type RuleProfile}
+
+pub using @core {type RuleSetValidation}
+
+pub using @run {type RunnerCommand}
+
+pub using @run {type RunnerScript}
+
+pub using @run {type SelectionMode}
+
+pub using @run {type SelectionReport}
+
+pub using @run {type SelectionValidation}
+
+pub using @run {type ShellDialect}
+
+pub using @plan {type SourceFile}
+
+pub using @core {type SourceSpan}
+
+pub using @run {type TextEdit}
+
+pub using @plan {type WorkspaceFileCategory}
+
+pub using @plan {type WorkspaceFileDecision}
+
+pub using @plan {type WorkspaceFileSpec}
+
+pub using @plan {type WorkspaceSelectionReport}
+
+// Traits
+
