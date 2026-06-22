@@ -1,0 +1,58 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "yelfs/moon_mutest/io"
+
+import {
+  "moonbitlang/core/debug",
+  "yelfs/moon_mutest/core",
+}
+
+// Values
+pub fn candidate_to_json_string(@core.MutationCandidate, indent? : Int) -> String
+
+pub fn discover(String, file? : String) -> Array[@core.MutationCandidate]
+
+pub fn discover_with_profile(String, @core.RuleProfile, file? : String) -> Array[@core.MutationCandidate]
+
+pub fn format_candidate(@core.MutationCandidate) -> String
+
+pub fn format_candidate_list(ArrayView[@core.MutationCandidate]) -> String
+
+pub fn format_manifest(String, file? : String) -> String
+
+pub fn format_manifest_json(String, file? : String) -> String
+
+pub fn format_manifest_json_with_profile(String, @core.RuleProfile, file? : String) -> String
+
+pub fn format_manifest_with_profile(String, @core.RuleProfile, file? : String) -> String
+
+pub fn format_rule_catalog(profile? : @core.RuleProfile) -> String
+
+pub fn format_summary(@core.MutationSummary) -> String
+
+pub fn manifest(String, file? : String) -> MutationManifest
+
+pub fn manifest_to_json_string(MutationManifest, indent? : Int) -> String
+
+pub fn manifest_with_profile(String, @core.RuleProfile, file? : String) -> MutationManifest
+
+pub fn summarize(String, file? : String) -> @core.MutationSummary
+
+pub fn summarize_candidates(String, ArrayView[@core.MutationCandidate]) -> @core.MutationSummary
+
+// Errors
+
+// Types and methods
+pub(all) struct MutationManifest {
+  summary : @core.MutationSummary
+  candidates : Array[@core.MutationCandidate]
+} derive(Eq, ToJson, @debug.Debug)
+
+// Type aliases
+pub using @core {type MutationCandidate}
+
+pub using @core {type MutationSummary}
+
+pub using @core {type RuleProfile}
+
+// Traits
+
