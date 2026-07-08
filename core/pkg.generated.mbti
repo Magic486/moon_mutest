@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "yelfs/moon_mutest/core"
+package "Magic486/moon_mutest/core"
 
 import {
   "moonbitlang/core/debug",

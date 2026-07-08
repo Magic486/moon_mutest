@@ -33,16 +33,20 @@ pub fn copy_workspace_for_mutation(
     raise @fs.IOError("unsafe temporary workspace path: " + temp_root)
   }
   if @fs.path_exists(temp_root) {
-    remove_tree(temp_root)
+    if !remove_tree(temp_root) {
+      raise @fs.IOError(
+        "could not remove temporary workspace path: " + temp_root,
+      )
+    }
   }
   ensure_dir(temp_root)
   copy_tree(source_root, temp_root, temp_root)
 }
 
 ///|
-pub fn remove_workspace_tree(path : String) -> Unit raise {
+pub fn remove_workspace_tree(path : String) -> Unit {
   if @fs.path_exists(path) {
-    remove_tree(path)
+    ignore(remove_tree(path))
   }
 }
 
@@ -101,16 +105,11 @@ fn copy_tree(source : String, dest : String, temp_root : String) -> Unit raise {
 }
 
 ///|
-fn remove_tree(path : String) -> Unit raise {
-  if @fs.is_dir(path) {
-    let entries = @fs.read_dir(path)
-    entries.sort()
-    for entry in entries {
-      remove_tree(join_path(path, entry))
-    }
-    @fs.remove_dir(path)
-  } else if @fs.is_file(path) {
-    @fs.remove_file(path)
+fn remove_tree(path : String) -> Bool {
+  if @fs.path_exists(path) {
+    node_remove_tree(path)
+  } else {
+    true
   }
 }
 

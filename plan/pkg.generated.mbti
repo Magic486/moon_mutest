@@ -1,9 +1,9 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "yelfs/moon_mutest/plan"
+package "Magic486/moon_mutest/plan"
 
 import {
+  "Magic486/moon_mutest/core",
   "moonbitlang/core/debug",
-  "yelfs/moon_mutest/core",
 }
 
 // Values

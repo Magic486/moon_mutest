@@ -7,7 +7,7 @@ facade package.
 Top-level layout:
 
 - `exports.mbt`: root facade that re-exports the public API from subpackages so
-  users can keep importing `yelfs/moon_mutest`.
+  users can keep importing `Magic486/moon_mutest`.
 - `core/`: source scanning, mutation rules, candidate filtering, and mutant
   generation.
 - `io/`: text and JSON manifest construction/serialization.

@@ -10,6 +10,14 @@
 
 moon_mutest 面向 MoonBit 项目提供变异测试能力：自动发现源码中的可变异位置，生成 mutated source，输出文本/JSON manifest，并将后续 `moon check` / `moon test` 结果分类为 killed、survived、compile-error、timeout 等状态，用于衡量测试套件是否真正能捕获语义缺陷。
 
+## 创新点与特点
+
+- 面向 MoonBit 生态当前较缺少的测试质量评估能力，补充 `moon test` 和覆盖率之外的质量维度；
+- 不是简单包装测试命令，而是主动注入语义变化，验证测试是否能发现真实缺陷；
+- 支持从源码扫描、mutation plan、临时 workspace 复制、真实命令执行到报告汇总的闭环；
+- 同时提供可复用 MoonBit 库和可运行 CLI，兼顾生态集成和直接使用；
+- 支持质量门禁、分片、批次和多格式报告，具备继续接入 CI 的工程基础。
+
 ## 核心功能
 
 - 扫描 MoonBit 源码，生成布尔、比较、关系、算术、逻辑、数字边界变异点；

@@ -45,11 +45,12 @@ test "runs mutations against a copied MoonBit workspace" {
     temp_workspace: Some(temp),
     config,
     selection: FirstMutants(1),
+    keep_temp: true,
   })
   inspect(report.baseline.can_run_mutants, content="true")
   inspect(report.selection.selected_count, content="1")
   inspect(report.report.killed, content="1")
   inspect(report.report.survived, content="0")
-  inspect(@fs.path_exists(temp), content="false")
+  inspect(@fs.path_exists(temp), content="true")
   remove_workspace_tree(fixture)
 }

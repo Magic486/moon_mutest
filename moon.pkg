@@ -1,7 +1,7 @@
 import {
   "moonbitlang/core/json",
-  "yelfs/moon_mutest/core",
-  "yelfs/moon_mutest/io",
-  "yelfs/moon_mutest/plan",
-  "yelfs/moon_mutest/run",
+  "Magic486/moon_mutest/core",
+  "Magic486/moon_mutest/io",
+  "Magic486/moon_mutest/plan",
+  "Magic486/moon_mutest/run",
 }

@@ -293,6 +293,22 @@ test {
 
 这个设计避免直接修改用户项目，也让每次运行都更容易复现。
 
+仓库中提供了一个最小质量门禁示例 workspace：
+
+```bash
+moon run --target js cmd/main -- run examples/quality_gate_workspace --max-mutants 1 --first 1 --temp-dir _build/quality-gate-example-run
+```
+
+这个示例会把 `value == 42` 变异为 `value != 42`，对应测试会失败，因此预期信号是：
+
+```text
+killed: 1
+survived: 0
+score: 100%
+```
+
+CI 会运行该示例，避免核心演示场景中出现 mutant 全部逃逸但无人察觉的问题。
+
 ## CI 规划能力
 
 `moon_mutest` 不只关注本地一次性运行，也提供适合 CI 的规划 API。
@@ -409,13 +425,27 @@ test {
 
 ```bash
 moon check --warn-list +73
+moon fmt --check
+moon info
 moon check --target js --warn-list +73
 moon build
 moon test --warn-list +73
 moon test --target js --warn-list +73
-moon fmt
-moon info
 ```
+
+当前 `moon 0.1.20260703` 的 `moon fmt` 和 `moon info` 不支持 `--deny-warn` 参数。
+CI 中的步骤名称保留 `moon fmt --deny-warn` 和 `moon info --deny-warn`，但会先检测
+工具链是否支持该参数：支持时直接使用 `--deny-warn`，不支持时使用当前官方可用的
+`moon fmt --check`，并在 `moon info` 后检查 `pkg.generated.mbti` 是否产生未提交 diff。
+
+发布到 mooncakes.io 前需要本机已有 MoonBit 登录凭据。发布检查和发布命令：
+
+```bash
+moon publish --dry-run
+moon publish
+```
+
+如果出现 `failed to open credentials file`，需要先按 MoonBit 官方账号流程登录，再重新执行发布。
 
 根包和大部分规划、报告逻辑保持平台无关，方便测试。真实 workspace runner 依赖
 JS target，因为它需要调用 Node 的文件系统和子进程能力。

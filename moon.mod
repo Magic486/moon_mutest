@@ -9,7 +9,7 @@
 //   "moonbitlang/x@0.4.6",
 // }
 
-name = "yelfs/moon_mutest"
+name = "Magic486/moon_mutest"
 
 version = "0.1.0"
 
