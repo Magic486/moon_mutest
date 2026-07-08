@@ -70,6 +70,32 @@ MoonBit 生态正在快速发展，项目会越来越依赖自动化测试和 CI
 
 先确认已经安装 MoonBit 工具链，并且命令行可以使用 `moon`。
 
+作为库使用时，在你的 MoonBit 项目中添加依赖：
+
+```bash
+moon add Magic486/moon_mutest@0.1.3
+```
+
+在使用方 package 的 `moon.pkg` 中导入：
+
+```text
+import {
+  "Magic486/moon_mutest"
+}
+```
+
+然后可以直接调用公开 API：
+
+```mbt nocheck
+///|
+test {
+  let manifest = @moon_mutest.manifest("a == b && true", file="demo.mbt")
+  inspect(manifest.summary.candidate_count, content="3")
+}
+```
+
+CLI 目前作为仓库内可执行包提供，适合从源码仓库运行。
+
 克隆仓库后，在项目根目录运行：
 
 ```bash

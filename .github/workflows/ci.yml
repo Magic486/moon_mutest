@@ -2,53 +2,73 @@ name: CI
 
 on:
   push:
+    branches:
+      - master
   pull_request:
   workflow_dispatch:
 
 jobs:
-  moonbit:
-    runs-on: ubuntu-latest
+  check:
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
-      - name: Set up MoonBit
+      - name: Install MoonBit on Unix
+        if: ${{ matrix.os != 'windows-latest' }}
         run: |
           curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
           echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
 
-      - name: Show toolchain
-        run: moon version --all
+      - name: Install MoonBit on Windows
+        if: ${{ matrix.os == 'windows-latest' }}
+        run: |
+          Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+          irm https://cli.moonbitlang.com/install/powershell.ps1 | iex
+          "C:\Users\runneradmin\.moon\bin" | Out-File -FilePath $env:GITHUB_PATH -Append
+
+      - name: Post install
+        run: |
+          moon version --all
+          moon update
 
       - name: moon check
-        run: moon check --warn-list +73
+        run: moon check --target all
 
-      - name: moon fmt --deny-warn
+      - name: moon test
+        run: moon test --target all
+
+      - name: moon fmt --deny-warn / moon fmt && git diff --exit-code
+        shell: bash
         run: |
           if moon fmt --help | grep -q -- '--deny-warn'; then
             moon fmt --deny-warn
           else
-            moon fmt --check
+            moon fmt
+            git diff --exit-code
           fi
 
-      - name: moon info --deny-warn
+      - name: moon info --deny-warn / moon info && git diff --exit-code
+        shell: bash
         run: |
           if moon info --help | grep -q -- '--deny-warn'; then
             moon info --deny-warn
           else
             moon info
-            git diff --exit-code -- '**/pkg.generated.mbti'
           fi
-
-      - name: Build
-        run: moon build
-
-      - name: moon test
-        run: moon test --warn-list +73
+          git diff --exit-code
 
       - name: Mutation quality gate example
+        shell: bash
         run: |
-          temp_dir="_build/quality-gate-example-run-${GITHUB_RUN_ID:-local}"
+          temp_dir="_build/quality-gate-example-run-${{ matrix.os }}-${GITHUB_RUN_ID:-local}"
           rm -rf "$temp_dir"
           moon run --target js cmd/main -- run examples/quality_gate_workspace --max-mutants 1 --first 1 --temp-dir "$temp_dir" | tee mutation-report.txt
           grep -q "killed: 1" mutation-report.txt
