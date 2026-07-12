@@ -1,0 +1,9 @@
+{
+  "profile": "basic",
+  "format": "text",
+  "max_mutants": 1,
+  "first": 1,
+  "fail_under": 100,
+  "max_survived": 0,
+  "max_skipped": 0
+}

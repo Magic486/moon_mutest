@@ -1,0 +1,14 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "Magic486/moon_mutest_weak_test_fixture"
+
+// Values
+pub fn adjusted_score(Int) -> Int
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits
+

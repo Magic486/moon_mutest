@@ -53,6 +53,8 @@ pub fn default_commands() -> Array[@run.RunnerCommand]
 
 pub fn default_rules() -> Array[@core.MutationRule]
 
+pub fn diagnose_mutant_result(@run.ProjectMutantResult) -> String
+
 pub fn discover(String, file? : String) -> Array[@core.MutationCandidate]
 
 pub fn discover_filtered(String, @core.MutationFilter, file? : String) -> Array[@core.MutationCandidate]
@@ -73,6 +75,10 @@ pub fn evaluate_quality_gate_after_baseline(@run.ProjectRunReport, @run.QualityG
 
 pub fn execution_by_mutation_id(@run.ExecutionPlan, Int) -> @run.MutationExecution?
 
+pub fn experimental_rules() -> Array[@core.MutationRule]
+
+pub fn file_risk_level(@run.FileRunReport) -> String
+
 pub fn filter_candidates(ArrayView[@core.MutationCandidate], @core.MutationFilter) -> Array[@core.MutationCandidate]
 
 pub fn format_baseline_report(@run.BaselineReport) -> String
@@ -88,6 +94,8 @@ pub fn format_candidate_list(ArrayView[@core.MutationCandidate]) -> String
 pub fn format_config(@run.MutestConfig) -> String
 
 pub fn format_execution_plan(@run.ExecutionPlan) -> String
+
+pub fn format_html_run_report(@run.ProjectRunReport) -> String
 
 pub fn format_manifest(String, file? : String) -> String
 
@@ -129,6 +137,8 @@ pub fn format_selection_report(@run.SelectionReport) -> String
 
 pub fn format_summary(@core.MutationSummary) -> String
 
+pub fn format_survived_diagnostics(@run.ProjectRunReport) -> String
+
 pub fn format_unified_diff(String, Int, String, String) -> String
 
 pub fn format_workspace_file_category(@plan.WorkspaceFileCategory) -> String
@@ -152,6 +162,10 @@ pub fn manifest_with_profile(String, @core.RuleProfile, file? : String) -> @io.M
 pub fn mutant_by_id(String, Int, file? : String) -> @core.Mutant?
 
 pub fn mutation_kind_label(@core.MutationKind) -> String
+
+pub fn mutation_risk_level(@run.ProjectRunReport) -> String
+
+pub fn mutation_risk_summary(@run.ProjectRunReport) -> String
 
 pub fn outcome_label(@run.MutantOutcome) -> String
 
@@ -181,11 +195,15 @@ pub fn report_format_label(@run.ReportFormat) -> String
 
 pub fn result(@core.MutationCandidate, @run.MutantOutcome, detail? : String) -> @run.MutantResult
 
+pub fn risk_ranked_files(@run.ProjectRunReport) -> Array[@run.FileRunReport]
+
 pub fn rule(@core.MutationKind, String, String, String) -> @core.MutationRule
 
 pub fn rule_catalog() -> Array[@core.RuleCatalogEntry]
 
 pub fn rules_for_profile(@core.RuleProfile) -> Array[@core.MutationRule]
+
+pub fn select_changed_workspace_files(ArrayView[@plan.SourceFile], ArrayView[String]) -> Array[@plan.SourceFile]
 
 pub fn select_executions(@run.ExecutionPlan, @run.SelectionMode) -> Array[@run.MutationExecution]
 

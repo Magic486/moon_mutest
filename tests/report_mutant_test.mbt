@@ -38,7 +38,19 @@ test "formats report and individual results" {
       #|compile-error: 0
       #|timeout: 0
       #|skipped: 0
+      #|equivalent: 0
       #|score: 100%
     ),
   )
+}
+
+///|
+test "equivalent mutants stay visible without lowering the score" {
+  let candidates = @moon_mutest.discover("a == b", file="sample.mbt")
+  let report = @moon_mutest.summarize_results("sample.mbt", [
+    @moon_mutest.result(candidates[0], Equivalent, detail="domain invariant"),
+  ])
+  inspect(report.equivalent, content="1")
+  inspect(report.score_percent, content="0")
+  assert_true(@moon_mutest.format_run_report(report).contains("equivalent: 1"))
 }

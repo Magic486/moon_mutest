@@ -130,6 +130,22 @@ pub fn select_workspace_files(
 }
 
 ///|
+/// Keep only already-selected workspace files whose root-relative paths are
+/// present in a Git changed-file list.
+pub fn select_changed_workspace_files(
+  files : ArrayView[SourceFile],
+  changed_paths : ArrayView[String],
+) -> Array[SourceFile] {
+  let selected : Array[SourceFile] = []
+  for file in files {
+    if is_changed_workspace_path(file.path, changed_paths) {
+      selected.push(file)
+    }
+  }
+  selected
+}
+
+///|
 pub fn summarize_workspace_selection(
   files : ArrayView[SourceFile],
   spec : WorkspaceFileSpec,
@@ -243,4 +259,19 @@ fn is_generated_moonbit_path(path : String) -> Bool {
 ///|
 fn normalize_path(path : String) -> String {
   path.replace(old="\\", new="/")
+}
+
+///|
+fn is_changed_workspace_path(
+  file_path : String,
+  changed_paths : ArrayView[String],
+) -> Bool {
+  let normalized_file = normalize_path(file_path)
+  for changed_path in changed_paths {
+    if normalized_file == normalize_path(changed_path) {
+      break true
+    }
+  } nobreak {
+    false
+  }
 }

@@ -156,6 +156,7 @@ test "formats quality gate reports" {
       #|compile-error: 0
       #|timeout: 0
       #|skipped: 0
+      #|equivalent: 0
       #|message: 1 quality gate violation(s)
       #|violations:
       #|- score_percent: actual=40, limit=80, mutation score is below the required threshold

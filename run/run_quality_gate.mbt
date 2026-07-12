@@ -33,6 +33,7 @@ pub(all) struct QualityGateReport {
   compile_error : Int
   timeout : Int
   skipped : Int
+  equivalent : Int
   violations : Array[QualityGateViolation]
   message : String
 } derive(Debug, Eq, ToJson)
@@ -128,6 +129,7 @@ pub fn evaluate_quality_gate(
     compile_error: report.compile_error,
     timeout: report.timeout,
     skipped: report.skipped,
+    equivalent: report.equivalent,
     violations,
     message: quality_gate_message(status, violations.length(), scored_mutants),
   }
@@ -158,6 +160,7 @@ pub fn evaluate_quality_gate_after_baseline(
       compile_error: report.compile_error,
       timeout: report.timeout,
       skipped: report.skipped,
+      equivalent: report.equivalent,
       violations: [violation],
       message: "baseline must pass before mutation quality can be trusted",
     }
@@ -189,6 +192,7 @@ pub fn format_quality_gate_report(report : QualityGateReport) -> String {
     "compile-error: \{report.compile_error}",
     "timeout: \{report.timeout}",
     "skipped: \{report.skipped}",
+    "equivalent: \{report.equivalent}",
     "message: \{report.message}",
   ]
   if report.violations.is_empty() {

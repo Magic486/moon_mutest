@@ -20,6 +20,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           persist-credentials: false
+          fetch-depth: 0
 
       - name: Install MoonBit on Unix
         if: ${{ matrix.os != 'windows-latest' }}
@@ -74,12 +75,80 @@ jobs:
           grep -q "and-to-or" scan-report.txt
           grep -q "true-to-false" scan-report.txt
 
+      - name: Published package consumer example
+        shell: bash
+        run: |
+          moon -C examples/consumer_workspace update
+          moon -C examples/consumer_workspace info
+          moon -C examples/consumer_workspace fmt
+          git diff --exit-code
+          moon -C examples/consumer_workspace test
+
+      - name: Incremental mutation example
+        shell: bash
+        run: |
+          temp_dir="_build/incremental-run-${{ matrix.os }}-${GITHUB_RUN_ID:-local}"
+          rm -rf "$temp_dir"
+          moon run --target js cmd/main -- run . --changed-since HEAD~1 --max-mutants 1 --first 1 --temp-dir "$temp_dir" | tee incremental-report.txt
+          grep -Fq "changed-since: HEAD~1" incremental-report.txt
+          grep -Eq "git-changed-files: [1-9][0-9]*" incremental-report.txt
+
       - name: Mutation quality gate example
         shell: bash
         run: |
           temp_dir="_build/quality-gate-example-run-${{ matrix.os }}-${GITHUB_RUN_ID:-local}"
           rm -rf "$temp_dir"
-          moon run --target js cmd/main -- run examples/quality_gate_workspace --max-mutants 1 --first 1 --temp-dir "$temp_dir" | tee mutation-report.txt
+          moon run --target js cmd/main -- run examples/quality_gate_workspace --max-mutants 1 --first 1 --temp-dir "$temp_dir" --fail-under 100 --max-survived 0 --max-skipped 0 | tee mutation-report.txt
           grep -q "killed: 1" mutation-report.txt
           grep -q "survived: 0" mutation-report.txt
           grep -q "score: 100%" mutation-report.txt
+          grep -q "status: passed" mutation-report.txt
+
+      - name: Configured quality gate example
+        shell: bash
+        run: |
+          temp_dir="_build/quality-gate-config-run-${{ matrix.os }}-${GITHUB_RUN_ID:-local}"
+          rm -rf "$temp_dir"
+          moon run --target js cmd/main -- run examples/quality_gate_workspace --config examples/quality_gate_workspace/moon_mutest.json --temp-dir "$temp_dir" | tee config-report.txt
+          grep -q "killed: 1" config-report.txt
+          grep -q "status: passed" config-report.txt
+
+      - name: HTML report example
+        shell: bash
+        run: |
+          temp_dir="_build/html-report-run-${{ matrix.os }}-${GITHUB_RUN_ID:-local}"
+          rm -rf "$temp_dir"
+          moon run --target js cmd/main -- run examples/weak_test_workspace --format html --max-mutants 1 --first 1 --temp-dir "$temp_dir" > mutest-report.html
+          test -s mutest-report.html
+          sed -n '1,80p' mutest-report.html
+          grep -Fq "<!doctype html>" mutest-report.html
+          grep -Fq "File Risk Ranking" mutest-report.html
+          grep -Fq "Survived Diagnostics" mutest-report.html
+          grep -Fq "assert exact numeric results" mutest-report.html
+
+      - name: Weak test example reports survived mutant
+        shell: bash
+        run: |
+          temp_dir="_build/weak-test-example-run-${{ matrix.os }}-${GITHUB_RUN_ID:-local}"
+          rm -rf "$temp_dir"
+          moon run --target js cmd/main -- run examples/weak_test_workspace --max-mutants 1 --first 1 --temp-dir "$temp_dir" | tee weak-report.txt
+          grep -q "killed: 0" weak-report.txt
+          grep -q "survived: 1" weak-report.txt
+          grep -q "score: 0%" weak-report.txt
+          grep -q "risk: high" weak-report.txt
+          grep -q "assert exact numeric results" weak-report.txt
+
+      - name: Coverage analysis
+        shell: bash
+        run: moon coverage analyze > coverage.txt
+
+      - name: Upload mutation evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: moon-mutest-evidence-${{ matrix.os }}
+          path: |
+            mutest-report.html
+            coverage.txt
+          if-no-files-found: error
+          retention-days: 14

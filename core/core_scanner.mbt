@@ -102,9 +102,9 @@ pub fn discover_with_rules(
       let (next_i, next_line, next_column) = skip_char(source, i, line, column)
       continue next_i, next_line, next_column
     } else {
-      let next = find_rule_at(source, i, rules)
-      match next {
-        Some(rule) => {
+      let matched_rules = rules_at(source, i, rules)
+      if !line_at(source, i).contains("mutest:ignore") {
+        for rule in matched_rules {
           let end = i + rule.from.length()
           found.push({
             id: found.length(),
@@ -114,18 +114,10 @@ pub fn discover_with_rules(
             replacement: rule.to,
             line_text: line_at(source, i),
           })
-          let (next_i, next_line, next_column) = advance(
-            source, i, line, column,
-          )
-          continue next_i, next_line, next_column
-        }
-        None => {
-          let (next_i, next_line, next_column) = advance(
-            source, i, line, column,
-          )
-          continue next_i, next_line, next_column
         }
       }
+      let (next_i, next_line, next_column) = advance(source, i, line, column)
+      continue next_i, next_line, next_column
     }
   }
   found
@@ -181,18 +173,28 @@ pub fn summarize_candidates(
 }
 
 ///|
-fn find_rule_at(
+fn rules_at(
   source : String,
   index : Int,
   rules : ArrayView[MutationRule],
-) -> MutationRule? {
+) -> Array[MutationRule] {
+  let matched : Array[MutationRule] = []
+  let mut longest_token = 0
   for rule in rules {
     if starts_with_at(source, index, rule.from) &&
-      token_boundary(source, index, rule.from) {
-      return Some(rule)
+      token_boundary(source, index, rule.from) &&
+      rule.from.length() > longest_token {
+      longest_token = rule.from.length()
     }
   }
-  None
+  for rule in rules {
+    if starts_with_at(source, index, rule.from) &&
+      token_boundary(source, index, rule.from) &&
+      rule.from.length() == longest_token {
+      matched.push(rule)
+    }
+  }
+  matched
 }
 
 ///|

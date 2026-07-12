@@ -1,7 +1,9 @@
 import {
   "moonbitlang/core/argparse",
   "moonbitlang/core/env",
+  "moonbitlang/core/json",
   "moonbitlang/core/string",
+  "moonbitlang/x/fs",
   "Magic486/moon_mutest" @mutest,
   "Magic486/moon_mutest/runner",
 }

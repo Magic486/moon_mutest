@@ -14,8 +14,9 @@ Top-level layout:
 - `plan/`: project-level mutation plans and workspace source selection.
 - `run/`: text edits, execution plans, sharding/selection, batching, command
   classification, baseline gating, scripts, reports, and quality gates.
-- `runner/`: JS/Node-backed workspace loading, temporary project copying,
-  mutation application, command execution, and live run summaries.
+- `runner/`: JS/Node-backed workspace loading, Git changed-file discovery,
+  temporary project copying, mutation application, command execution, and live
+  run summaries.
 - `tests/`: black-box tests that exercise the public root facade.
 - `cmd/main/`: CLI entry point package.
 - `docs/`: proposal and project notes.

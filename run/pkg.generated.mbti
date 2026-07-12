@@ -45,6 +45,8 @@ pub fn config_to_json_string(MutestConfig, indent? : Int) -> String
 
 pub fn default_commands() -> Array[RunnerCommand]
 
+pub fn diagnose_mutant_result(ProjectMutantResult) -> String
+
 pub fn discover_with_rules(String, ArrayView[@core.MutationRule], file? : String) -> Array[@core.MutationCandidate]
 
 pub fn edit_for_candidate(@core.MutationCandidate) -> TextEdit
@@ -59,6 +61,8 @@ pub fn evaluate_quality_gate_after_baseline(ProjectRunReport, QualityGate, Basel
 
 pub fn execution_by_mutation_id(ExecutionPlan, Int) -> MutationExecution?
 
+pub fn file_risk_level(FileRunReport) -> String
+
 pub fn filter_candidates(ArrayView[@core.MutationCandidate], @core.MutationFilter) -> Array[@core.MutationCandidate]
 
 pub fn format_baseline_report(BaselineReport) -> String
@@ -70,6 +74,8 @@ pub fn format_batch_strategy(BatchStrategy) -> String
 pub fn format_config(MutestConfig) -> String
 
 pub fn format_execution_plan(ExecutionPlan) -> String
+
+pub fn format_html_run_report(ProjectRunReport) -> String
 
 pub fn format_markdown_project_plan(@plan.ProjectMutationPlan) -> String
 
@@ -91,6 +97,8 @@ pub fn format_selection_mode(SelectionMode) -> String
 
 pub fn format_selection_report(SelectionReport) -> String
 
+pub fn format_survived_diagnostics(ProjectRunReport) -> String
+
 pub fn format_unified_diff(String, Int, String, String) -> String
 
 pub fn generate_runner_script(ExecutionPlan, ShellDialect) -> RunnerScript
@@ -100,6 +108,10 @@ pub fn generate_selected_runner_script(ExecutionPlan, SelectionMode, ShellDialec
 pub fn invert_edit(TextEdit) -> TextEdit
 
 pub fn mutation_kind_label(@core.MutationKind) -> String
+
+pub fn mutation_risk_level(ProjectRunReport) -> String
+
+pub fn mutation_risk_summary(ProjectRunReport) -> String
 
 pub fn outcome_label(MutantOutcome) -> String
 
@@ -118,6 +130,8 @@ pub fn quality_gate_status_label(QualityGateStatus) -> String
 pub fn report_format_label(ReportFormat) -> String
 
 pub fn result(@core.MutationCandidate, MutantOutcome, detail? : String) -> MutantResult
+
+pub fn risk_ranked_files(ProjectRunReport) -> Array[FileRunReport]
 
 pub fn rules_for_profile(@core.RuleProfile) -> Array[@core.MutationRule]
 
@@ -226,6 +240,7 @@ pub(all) struct FileRunReport {
   compile_error : Int
   timeout : Int
   skipped : Int
+  equivalent : Int
   score_percent : Int
 } derive(Eq, ToJson, @debug.Debug)
 
@@ -235,6 +250,7 @@ pub(all) enum MutantOutcome {
   CompileError
   Timeout
   Skipped
+  Equivalent
 } derive(Eq, ToJson, @debug.Debug)
 
 pub(all) struct MutantResult {
@@ -258,6 +274,7 @@ pub(all) struct MutationRunReport {
   compile_error : Int
   timeout : Int
   skipped : Int
+  equivalent : Int
   score_percent : Int
 } derive(Eq, ToJson, @debug.Debug)
 
@@ -296,6 +313,7 @@ pub(all) struct ProjectRunReport {
   compile_error : Int
   timeout : Int
   skipped : Int
+  equivalent : Int
   score_percent : Int
   files : Array[FileRunReport]
   results : Array[ProjectMutantResult]
@@ -321,6 +339,7 @@ pub(all) struct QualityGateReport {
   compile_error : Int
   timeout : Int
   skipped : Int
+  equivalent : Int
   violations : Array[QualityGateViolation]
   message : String
 } derive(Eq, ToJson, @debug.Debug)

@@ -29,6 +29,8 @@ pub fn plan_project_filtered(ArrayView[SourceFile], @core.MutationFilter) -> Pro
 
 pub fn project_mutation_by_id(ProjectMutationPlan, Int) -> ProjectMutation?
 
+pub fn select_changed_workspace_files(ArrayView[SourceFile], ArrayView[String]) -> Array[SourceFile]
+
 pub fn select_workspace_files(ArrayView[SourceFile], WorkspaceFileSpec) -> Array[SourceFile]
 
 pub fn source_file(String, String) -> SourceFile

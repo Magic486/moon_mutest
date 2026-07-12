@@ -5,6 +5,7 @@ pub(all) enum MutantOutcome {
   CompileError
   Timeout
   Skipped
+  Equivalent
 } derive(Debug, Eq, ToJson)
 
 ///|
@@ -23,6 +24,7 @@ pub(all) struct MutationRunReport {
   compile_error : Int
   timeout : Int
   skipped : Int
+  equivalent : Int
   score_percent : Int
 } derive(Debug, Eq, ToJson)
 
@@ -34,6 +36,7 @@ pub fn outcome_label(outcome : MutantOutcome) -> String {
     CompileError => "compile-error"
     Timeout => "timeout"
     Skipped => "skipped"
+    Equivalent => "equivalent"
   }
 }
 
@@ -56,6 +59,7 @@ pub fn summarize_results(
   let mut compile_error = 0
   let mut timeout = 0
   let mut skipped = 0
+  let mut equivalent = 0
   for item in results {
     match item.outcome {
       Killed => killed += 1
@@ -63,6 +67,7 @@ pub fn summarize_results(
       CompileError => compile_error += 1
       Timeout => timeout += 1
       Skipped => skipped += 1
+      Equivalent => equivalent += 1
     }
   }
   let scored = killed + survived
@@ -75,6 +80,7 @@ pub fn summarize_results(
     compile_error,
     timeout,
     skipped,
+    equivalent,
     score_percent,
   }
 }
@@ -89,6 +95,7 @@ pub fn format_run_report(report : MutationRunReport) -> String {
     "compile-error: \{report.compile_error}",
     "timeout: \{report.timeout}",
     "skipped: \{report.skipped}",
+    "equivalent: \{report.equivalent}",
     "score: \{report.score_percent}%",
   ].join("\n")
 }

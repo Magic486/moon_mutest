@@ -30,6 +30,19 @@ test "workspace spec can include test files" {
 }
 
 ///|
+test "workspace selection can keep only Git-changed production files" {
+  let selected = @moon_mutest.select_changed_workspace_files(
+    @moon_mutest.select_workspace_files(
+      workspace_files(),
+      @moon_mutest.WorkspaceFileSpec::moonbit_default(),
+    ),
+    ["cmd/main/main.mbt", "src/lib_test.mbt", "README.md"],
+  )
+  inspect(selected.length(), content="1")
+  inspect(selected[0].path, content="cmd/main/main.mbt")
+}
+
+///|
 test "workspace file classification explains decisions" {
   let spec = @moon_mutest.WorkspaceFileSpec::moonbit_default()
   let test_decision = @moon_mutest.classify_workspace_file(

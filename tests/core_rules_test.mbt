@@ -12,6 +12,23 @@ test "validates built in rule profiles" {
   )
   inspect(boundary.rule_count, content="17")
   inspect(boundary.duplicate_labels.length(), content="0")
+
+  let experimental = @moon_mutest.validate_rules(
+    @moon_mutest.rules_for_profile(ExperimentalProfile),
+  )
+  inspect(experimental.rule_count, content="25")
+  inspect(experimental.duplicate_labels.length(), content="0")
+}
+
+///|
+test "experimental profile adds strong operator replacements" {
+  let candidates = @moon_mutest.discover_with_profile(
+    "a <= b + c",
+    ExperimentalProfile,
+  )
+  inspect(candidates.length(), content="4")
+  assert_true(candidates.any(item => item.rule.label == "le-to-gt"))
+  assert_true(candidates.any(item => item.rule.label == "add-to-mul"))
 }
 
 ///|

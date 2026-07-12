@@ -35,7 +35,9 @@ pub fn format_workspace_run_markdown(report : WorkspaceRunReport) -> String {
     "| Compile errors | \{report.report.compile_error} |",
     "| Timeouts | \{report.report.timeout} |",
     "| Skipped | \{report.report.skipped} |",
+    "| Equivalent | \{report.report.equivalent} |",
     "| Score | \{report.report.score_percent}% |",
+    "| Risk | \{mutation_risk_level(report.report)} |",
     "",
     "## Workspace",
     "",
@@ -44,6 +46,9 @@ pub fn format_workspace_run_markdown(report : WorkspaceRunReport) -> String {
     "| Root | \{escape_markdown_cell(report.workspace)} |",
     "| Temp workspace | \{escape_markdown_cell(report.temp_workspace)} |",
     "| Temp kept | \{bool_label(report.kept_temp)} |",
+    "| Changed since | \{escape_markdown_cell(changed_since_label(report.changed_since))} |",
+    "| Git changed files | \{report.changed_files.length()} |",
+    "| Incremental files | \{report.plan.project.file_count} |",
     "",
     "## Baseline",
     "",
@@ -58,7 +63,31 @@ pub fn format_workspace_run_markdown(report : WorkspaceRunReport) -> String {
   append_baseline_command_table(lines, report)
   append_file_table(lines, report)
   append_mutant_table(lines, report)
+  append_survived_diagnostics(lines, report)
   lines.join("\n")
+}
+
+///|
+pub fn format_workspace_run_html(report : WorkspaceRunReport) -> String {
+  format_html_run_report(report.report).replace(
+    old="<section class=\"cards\">",
+    new=html_scope_section(report) + "\n<section class=\"cards\">",
+  )
+}
+
+///|
+fn html_scope_section(report : WorkspaceRunReport) -> String {
+  "<section class=\"panel\"><h2>Run Scope</h2><table><tbody>" +
+  "<tr><th>Changed since</th><td><code>" +
+  changed_since_label(report.changed_since) +
+  "</code></td></tr>" +
+  "<tr><th>Git changed files</th><td>" +
+  report.changed_files.length().to_string() +
+  "</td></tr>" +
+  "<tr><th>Incremental files</th><td>" +
+  report.plan.project.file_count.to_string() +
+  "</td></tr>" +
+  "</tbody></table></section>"
 }
 
 ///|
@@ -108,19 +137,19 @@ fn append_file_table(
   lines.push("## File Results")
   lines.push("")
   lines.push(
-    "| File | Total | Killed | Survived | Compile | Timeout | Skipped | Score |",
+    "| File | Total | Killed | Survived | Compile | Timeout | Skipped | Equivalent | Score |",
   )
-  lines.push("| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |")
+  lines.push("| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |")
   for file in report.report.files {
     lines.push(
       "| \{escape_markdown_cell(file.file)} | " +
       "\{file.total} | \{file.killed} | \{file.survived} | " +
-      "\{file.compile_error} | \{file.timeout} | \{file.skipped} | " +
+      "\{file.compile_error} | \{file.timeout} | \{file.skipped} | \{file.equivalent} | " +
       "\{file.score_percent}% |",
     )
   }
   if report.report.files.is_empty() {
-    lines.push("|  | 0 | 0 | 0 | 0 | 0 | 0 | 0% |")
+    lines.push("|  | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0% |")
   }
   lines.push("")
 }
@@ -148,6 +177,31 @@ fn append_mutant_table(
   }
   if report.report.results.is_empty() {
     lines.push("|  |  |  |  |  |  | no mutant results |")
+  }
+}
+
+///|
+fn append_survived_diagnostics(
+  lines : Array[String],
+  report : WorkspaceRunReport,
+) -> Unit {
+  lines.push("")
+  lines.push("## Survived Diagnostics")
+  lines.push("")
+  for result in report.report.results {
+    if result.outcome == Survived {
+      let mutation = result.mutation
+      let candidate = mutation.candidate
+      lines.push(
+        "- `#\{mutation.global_id}` " +
+        "\{escape_markdown_cell(mutation.file)}:\{candidate.span.line} " +
+        "\{candidate.rule.label}: " +
+        "\{escape_markdown_cell(diagnose_mutant_result(result))}",
+      )
+    }
+  }
+  if report.report.survived == 0 {
+    lines.push("- none")
   }
 }
 

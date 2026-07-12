@@ -77,6 +77,13 @@ pub fn rule_catalog() -> Array[RuleCatalogEntry] {
       description: boundary_rule_description(rule.label),
     })
   }
+  for rule in experimental_rules() {
+    entries.push({
+      rule,
+      profile: ExperimentalProfile,
+      description: experimental_rule_description(rule.label),
+    })
+  }
   entries
 }
 
@@ -85,7 +92,8 @@ pub fn rules_for_profile(profile : RuleProfile) -> Array[MutationRule] {
   match profile {
     BasicProfile => default_rules()
     BoundaryProfile => boundary_literal_rules() + default_rules()
-    ExperimentalProfile => boundary_literal_rules() + default_rules()
+    ExperimentalProfile =>
+      experimental_rules() + boundary_literal_rules() + default_rules()
   }
 }
 
@@ -95,6 +103,21 @@ pub fn boundary_literal_rules() -> Array[MutationRule] {
     rule(NumericLiteral, "0", "1", "zero-to-one"),
     rule(NumericLiteral, "1", "0", "one-to-zero"),
     rule(NumericLiteral, "-1", "0", "minus-one-to-zero"),
+  ]
+}
+
+///|
+/// Strong operator replacements intended for a small, opt-in experimental run.
+pub fn experimental_rules() -> Array[MutationRule] {
+  [
+    rule(RelationalOperator, "<=", ">", "le-to-gt"),
+    rule(RelationalOperator, "<", ">=", "lt-to-ge"),
+    rule(RelationalOperator, ">=", "<", "ge-to-lt"),
+    rule(RelationalOperator, ">", "<=", "gt-to-le"),
+    rule(ArithmeticOperator, "+", "*", "add-to-mul"),
+    rule(ArithmeticOperator, "-", "*", "sub-to-mul"),
+    rule(ArithmeticOperator, "*", "+", "mul-to-add"),
+    rule(ArithmeticOperator, "/", "+", "div-to-add"),
   ]
 }
 
@@ -164,5 +187,16 @@ fn boundary_rule_description(label : String) -> String {
     "one-to-zero" => "moves a one boundary down to zero"
     "minus-one-to-zero" => "moves a negative sentinel to zero"
     _ => "numeric boundary replacement"
+  }
+}
+
+///|
+fn experimental_rule_description(label : String) -> String {
+  match label {
+    "le-to-gt" | "lt-to-ge" | "ge-to-lt" | "gt-to-le" =>
+      "inverts a relational boundary"
+    "add-to-mul" | "sub-to-mul" | "mul-to-add" | "div-to-add" =>
+      "replaces arithmetic with a stronger alternative"
+    _ => "experimental operator replacement"
   }
 }

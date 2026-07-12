@@ -1,90 +1,174 @@
 # moon_mutest
 
-`moon_mutest` 是一个面向 MoonBit 项目的变异测试工具包。它会扫描
-MoonBit 源码，生成保守的变异点，把每个变异点应用到真实项目的临时副本中，
-再执行 `moon check` / `moon test`，最后汇总每个 mutant 是被测试杀死、
-逃逸、编译失败、超时还是被跳过。
+`moon_mutest` 是 MoonBit 项目的变异测试工具。它把小型代码改动应用到临时
+workspace，再运行 `moon check` 和 `moon test`，用结果判断测试是否真的能发现
+代码被改坏。
 
-这个项目的目标不是替代 `moon test`，而是回答一个更尖锐的问题：
-
-> 你的测试不仅会运行，还真的能发现代码被悄悄改坏了吗？
-
-项目同时提供两层能力：
-
-- 一个可复用的 MoonBit 库，用于扫描、规划、过滤、生成报告和质量门禁。
-- 一个 JS/Node 后端 CLI，用于对真实 MoonBit workspace 自动执行变异测试。
-
-仓库地址：
+它关注的不是“测试有没有运行”，而是“断言是否足够强”。例如把 `==` 改成 `!=`、
+把 `+` 改成 `-` 后测试仍通过，说明这个 mutant 逃逸，对应代码可能缺少精确断言或
+边界用例。
 
 - GitHub: <https://github.com/Magic486/moon_mutest>
 - Gitlink: <https://www.gitlink.org.cn/Magic486/moon_mutest>
 
-## 项目背景
+## 安装
 
-普通单元测试通常只告诉我们“当前测试是否通过”。覆盖率工具可以告诉我们
-“哪些行被执行过”。但它们都不一定能证明测试具有足够的断言能力。
-
-变异测试会主动制造小型缺陷，例如：
-
-- 把 `==` 改成 `!=`
-- 把 `&&` 改成 `||`
-- 把 `true` 改成 `false`
-- 把 `<` 改成 `<=`
-- 把 `+` 改成 `-`
-
-如果测试失败，说明这个变异被“杀死”，测试对这类缺陷有感知能力。如果测试仍然
-通过，说明该 mutant “逃逸”，对应位置可能缺少断言、边界用例或业务约束测试。
-
-MoonBit 生态正在快速发展，项目会越来越依赖自动化测试和 CI。`moon_mutest`
-尝试补上 MoonBit 质量基础设施中“测试强度评估”这一块。
-
-## 当前能力
-
-当前版本已经实现了从源码扫描到真实 workspace 自动运行的闭环：
-
-- 扫描 MoonBit 源码并生成变异候选点。
-- 跳过字符串、字符字面量、行注释和块注释，避免明显误报。
-- 支持基础规则集和边界规则集。
-- 生成文本、JSON 和 Markdown 报告。
-- 为多文件项目生成全局 mutant id。
-- 支持按 mutant 数量、id 范围、分片和批次规划执行。
-- 支持 patch preview 和可逆文本编辑。
-- 支持基线检查，只有原项目先通过 `moon check` / `moon test` 才继续跑 mutants。
-- 支持筛选生产文件、测试文件和生成文件。
-- 支持 Bash / PowerShell dry-run 脚本生成。
-- 支持 JS/Node workspace runner：
-  - 读取真实 MoonBit workspace 文件。
-  - 复制临时 workspace。
-  - 逐个应用 mutation。
-  - 执行 `moon check` / `moon test` 或自定义命令。
-  - 恢复被修改文件。
-  - 汇总真实运行结果。
-- 支持质量门禁：
-  - mutation score
-  - survived mutants
-  - compile errors
-  - timeouts
-  - skipped mutants
-
-## 快速开始
-
-先确认已经安装 MoonBit 工具链，并且命令行可以使用 `moon`。
-
-作为库使用时，在你的 MoonBit 项目中添加依赖：
+库 API 可以从 mooncakes.io 安装：
 
 ```bash
-moon add Magic486/moon_mutest@0.1.3
+moon add Magic486/moon_mutest@0.1.7
 ```
 
-在使用方 package 的 `moon.pkg` 中导入：
+CLI 目前随源码仓库提供，需要在本仓库根目录执行：
 
-```text
-import {
-  "Magic486/moon_mutest"
+```bash
+moon run --target js cmd/main -- scan "a == b && true"
+```
+
+需要 Node.js 和可用的 `moon` 命令。CLI 会在临时目录运行，默认不会修改目标项目。
+
+发布包的下游使用示例位于 `examples/consumer_workspace`，可在发布后验证：
+
+```bash
+moon -C examples/consumer_workspace test
+```
+
+## 最快用法
+
+先从一个很小的范围开始：
+
+```bash
+moon run --target js cmd/main -- run path/to/workspace --max-mutants 10 --first 10
+```
+
+对全部生产源码运行时，工具默认：
+
+1. 跳过 `*_test.mbt`、生成文件和 `_build`。
+2. 复制目标 workspace 到临时目录。
+3. 先执行基线 `moon check` 和 `moon test`。
+4. 逐个应用 mutation 并汇总 `killed`、`survived`、`compile-error`、`timeout`、`skipped`、`equivalent`。
+
+默认命令可以用 `--check-command` 与 `--test-command` 覆盖。
+
+## 增量变异测试
+
+对日常开发和 PR，推荐只测相对 Git 参考点发生变化的生产源码：
+
+```bash
+moon run --target js cmd/main -- run . \
+  --changed-since origin/master \
+  --max-mutants 30 \
+  --first 10
+```
+
+`--changed-since REF` 先以 `git merge-base REF HEAD` 找到共同基线，再使用
+`git diff --relative --name-only --diff-filter=ACMR BASE --` 获取
+新增、复制、修改和重命名后的文件，并包含当前未提交修改。删除文件会被忽略。
+报告中的 `changed-since`、`git-changed-files` 和 `incremental-files` 会显示实际范围。
+使用该参数时，目标 workspace 必须位于可读取参考点的 Git 仓库中。
+
+本地快速检查上一提交以来的改动：
+
+```bash
+moon run --target js cmd/main -- run . --changed-since HEAD~1 --max-mutants 20
+```
+
+在 CI 中，先确保 Git 历史包含参考分支；GitHub Actions 可以使用
+`actions/checkout` 的 `fetch-depth: 0`，然后传入 `origin/master`。命令会以目标
+workspace 作为相对路径根，因此嵌套的 MoonBit workspace 也能正确匹配 Git 文件。
+
+也可以写入 workspace 根目录的 `moon_mutest.json`：
+
+```json
+{
+  "changed_since": "origin/master",
+  "max_mutants": 30,
+  "first": 10,
+  "fail_under": 80,
+  "max_survived": 0
 }
 ```
 
-然后可以直接调用公开 API：
+命令行参数优先于配置文件。未指定 `--config` 时，会自动读取
+`workspace/moon_mutest.json`。
+
+已人工确认的等价 mutant 可以在配置中注明 id 和原因。它会出现在报告中，但不影响
+mutation score：
+
+```json
+{
+  "equivalent": [
+    { "id": 12, "reason": "该分支在当前域模型中与原逻辑等价" }
+  ]
+}
+```
+
+对于整行都不应生成 mutation 的生成代码或兼容代码，可在源码行末写
+`// mutest:ignore`。这是一项显式抑制，不应被用来掩盖 escaped mutant。
+
+## 质量门禁
+
+将变异测试接入 CI 时，使用质量门禁让不达标的 run 返回非零退出码：
+
+```bash
+moon run --target js cmd/main -- run . \
+  --changed-since origin/master \
+  --fail-under 80 \
+  --max-survived 0 \
+  --max-compile-error 0 \
+  --max-timeout 0 \
+  --max-skipped 0
+```
+
+`--strict-gate` 是一组保守默认值：score 至少 90，且不允许 survived、
+compile-error、timeout 或 skipped。
+
+仓库内有两个可复现示例：
+
+```bash
+# 强断言：预期 killed=1、score=100%、质量门禁通过
+moon run --target js cmd/main -- run examples/quality_gate_workspace \
+  --max-mutants 1 --first 1 --fail-under 100 --max-survived 0 --max-skipped 0
+
+# 弱断言：预期 survived=1、risk=high，并给出补测建议
+moon run --target js cmd/main -- run examples/weak_test_workspace \
+  --max-mutants 1 --first 1
+```
+
+## 报告
+
+默认文本报告适合终端与 CI 日志。还支持：
+
+```bash
+# 供 CI 机器消费
+moon run --target js cmd/main -- run . --format json --max-mutants 20
+
+# 供代码评审或归档阅读
+moon run --target js cmd/main -- run . --format markdown --max-mutants 20 > mutest-report.md
+
+# 可离线打开的总览、文件风险排序与 survived 诊断
+moon run --target js cmd/main -- run . --format html --max-mutants 20 > mutest-report.html
+```
+
+报告会按文件排序风险，并针对 survived mutant 给出建议。例如数值变异逃逸时会提示
+补充精确数值断言和边界值测试。
+
+## 常用参数
+
+| 参数 | 用途 |
+| --- | --- |
+| `--profile basic\|boundary\|experimental` | 选择变异规则集。 |
+| `--changed-since REF` | 只测相对 Git 参考点发生变化的生产文件。 |
+| `--max-mutants N` / `--first N` | 限制规划或实际执行数量。 |
+| `--id-start A --id-end B` | 执行半开区间 `[A, B)` 的 mutant id。 |
+| `--include-tests` | 也把测试文件作为 mutation 目标。 |
+| `--include-generated` | 包含生成的 MoonBit 文件。 |
+| `--keep-temp` / `--temp-dir PATH` | 保留或指定临时 workspace，便于排障。 |
+| `--no-fail-fast` | 一个 mutant 执行全部命令，而不是在首次有效信号后停止。 |
+| `--format text\|markdown\|json\|html` | 选择报告格式。 |
+| `--fail-under` 与 `--max-*` | 启用质量门禁。 |
+
+## 作为库使用
 
 ```mbt check
 ///|
@@ -94,418 +178,30 @@ test {
 }
 ```
 
-CLI 目前作为仓库内可执行包提供，适合从源码仓库运行。
+根包还提供扫描、规则过滤、项目计划、批次/分片选择、报告和质量门禁 API；详情可查看
+生成的 API 文档或 [repository layout](docs/repository_layout.md)。
 
-克隆仓库后，在项目根目录运行：
+## 开发与 CI
 
-```bash
-moon check --warn-list +73
-moon test --warn-list +73
-```
-
-扫描一段源码：
+提交前运行：
 
 ```bash
-moon run --target js cmd/main -- scan "a == b && true"
-```
-
-示例输出：
-
-```text
-Mutation candidates for <memory>
-total: 3
-boolean: 1
-equality: 1
-relational: 0
-arithmetic: 0
-logical: 1
-numeric: 0
-
-#0 <memory>:1:3 eq-to-ne == -> != | a == b && true
-#1 <memory>:1:8 and-to-or && -> || | a == b && true
-#2 <memory>:1:11 true-to-false true -> false | a == b && true
-```
-
-对真实 MoonBit 项目运行变异测试：
-
-```bash
-moon run --target js cmd/main -- run . --max-mutants 10 --first 10
-```
-
-如果你想先保守地试跑，可以限制 mutant 数量：
-
-```bash
-moon run --target js cmd/main -- run path/to/workspace --max-mutants 5 --first 5
-```
-
-## CLI 用法
-
-### scan
-
-`scan` 用来扫描一段源码字符串，不会访问真实项目文件。它适合快速查看某个表达式
-会生成哪些 mutation。
-
-```bash
-moon run --target js cmd/main -- scan "score >= limit && enabled"
-```
-
-使用边界规则集：
-
-```bash
-moon run --target js cmd/main -- scan --profile boundary "let n = 0"
-```
-
-输出 JSON，方便 CI 或其他工具消费：
-
-```bash
-moon run --target js cmd/main -- scan --json --profile boundary "let n = 1"
-```
-
-### run
-
-`run` 会读取真实 MoonBit workspace，复制一份临时目录，然后在临时目录中执行
-变异测试。默认命令是：
-
-```bash
-moon check --warn-list +73
-moon test --warn-list +73
-```
-
-常用参数：
-
-- `--profile basic|boundary|experimental`：选择规则集。
-- `--format text|markdown|json`：选择报告格式。
-- `--max-mutants N`：规划阶段最多保留 N 个 mutants。
-- `--first N`：只执行前 N 个 mutants。
-- `--id-start A --id-end B`：执行 `[A, B)` 范围内的 mutant id。
-- `--include-tests`：把 `*_test.mbt` / `*_wbtest.mbt` 也作为变异目标。
-- `--include-generated`：包含生成文件。
-- `--keep-temp`：保留临时 workspace，方便调试。
-- `--no-fail-fast`：对同一个 mutant 执行所有配置命令。
-- `--temp-dir PATH`：指定临时 workspace 路径。
-- `--check-command "..."`：自定义 check 阶段命令。
-- `--test-command "..."`：自定义 test 阶段命令。
-
-示例：
-
-```bash
-moon run --target js cmd/main -- run . \
-  --profile boundary \
-  --format markdown \
-  --max-mutants 30 \
-  --first 10
-```
-
-输出 JSON：
-
-```bash
-moon run --target js cmd/main -- run . --format json --max-mutants 10
-```
-
-保留临时目录：
-
-```bash
-moon run --target js cmd/main -- run . --keep-temp --temp-dir _build/mutest-debug
-```
-
-## 结果含义
-
-每个 mutant 会被归类为以下状态之一：
-
-- `Killed`：测试阶段失败，说明测试发现了这个变异。
-- `Survived`：所有命令通过，说明这个变异逃逸，测试可能不够强。
-- `CompileError`：check/build 阶段失败，变异导致代码无法编译。
-- `Timeout`：命令超过时间预算。
-- `Skipped`：runner 没有得到可用执行结果。
-
-通常最需要关注的是 `Survived`。它们往往意味着：
-
-- 缺少关键断言。
-- 没有覆盖边界条件。
-- 测试只检查了流程，没有检查结果。
-- 业务逻辑中存在等价实现，需要人工确认。
-
-## 支持的变异规则
-
-默认 `basic` 规则集包含：
-
-- boolean：`true <-> false`
-- equality：`== <-> !=`
-- relational：`<`, `<=`, `>`, `>=` 的边界替换
-- arithmetic：`+`, `-`, `*`, `/`
-- logical：`&& <-> ||`
-
-`boundary` 规则集额外包含数字边界变异：
-
-- `0 -> 1`
-- `1 -> 0`
-- `-1 -> 0`
-
-规则设计偏保守，优先保证输出可解释、可复现、便于调试。后续可以继续扩展到模式匹配、
-函数调用、集合操作、错误处理分支等更高阶的 MoonBit 语义规则。
-
-## 库 API 示例
-
-除了 CLI，`moon_mutest` 也可以作为 MoonBit 库使用。
-
-```mbt check
-///|
-test {
-  let manifest = @moon_mutest.manifest("a + b == c && false", file="demo.mbt")
-  inspect(manifest.summary.candidate_count, content="4")
-  inspect(manifest.candidates[0].rule.label, content="add-to-sub")
-
-  let mutants = @moon_mutest.generate_mutants("a + b == c", file="demo.mbt")
-  inspect(mutants[0].source, content="a - b == c")
-}
-```
-
-生成 JSON manifest：
-
-```mbt check
-///|
-test {
-  let text = @moon_mutest.format_manifest_json("a == b", file="demo.mbt")
-  assert_true(text.contains("\"candidate_count\": 1"))
-  assert_true(text.contains("\"eq-to-ne\""))
-}
-```
-
-多文件项目规划：
-
-```mbt check
-///|
-test {
-  let plan = @moon_mutest.plan_project([
-    @moon_mutest.source_file("src/a.mbt", "a == b"),
-    @moon_mutest.source_file("src/b.mbt", "x + y && false"),
-  ])
-  inspect(plan.file_count, content="2")
-  inspect(plan.mutation_count, content="4")
-  inspect(plan.mutations[0].global_id, content="0")
-}
-```
-
-生成 patch preview：
-
-```mbt check
-///|
-test {
-  let source = "let ok = a == b"
-  let candidate = @moon_mutest.discover(source, file="a.mbt")[0]
-  let preview = @moon_mutest.preview_candidate_patch(source, candidate)
-  assert_true(preview is Some(_))
-}
-```
-
-## 真实 workspace runner
-
-真实项目执行是本项目最关键的部分。`runner/` 子包和 `cmd/main/` CLI 使用 JS target，
-原因是它们需要 Node 环境提供文件系统和进程执行能力。
-
-执行流程如下：
-
-1. 读取 workspace 中符合条件的 `.mbt` 文件。
-2. 按配置排除 `_build/`、生成文件、测试文件等目标。
-3. 为所有文件生成 mutation plan。
-4. 复制 workspace 到临时目录。
-5. 在临时目录执行 baseline 命令。
-6. baseline 通过后，按选择策略逐个应用 mutant。
-7. 对每个 mutant 执行 check/test 命令。
-8. 根据命令退出码、阶段和超时情况分类结果。
-9. 恢复被修改文件。
-10. 删除临时目录，除非指定 `--keep-temp`。
-11. 输出文本、Markdown 或 JSON 报告。
-
-这个设计避免直接修改用户项目，也让每次运行都更容易复现。
-
-仓库中提供了一个最小质量门禁示例 workspace：
-
-```bash
-moon run --target js cmd/main -- run examples/quality_gate_workspace --max-mutants 1 --first 1 --temp-dir _build/quality-gate-example-run
-```
-
-这个示例会把 `value == 42` 变异为 `value != 42`，对应测试会失败，因此预期信号是：
-
-```text
-killed: 1
-survived: 0
-score: 100%
-```
-
-CI 会运行该示例，避免核心演示场景中出现 mutant 全部逃逸但无人察觉的问题。
-
-## CI 规划能力
-
-`moon_mutest` 不只关注本地一次性运行，也提供适合 CI 的规划 API。
-
-```mbt check
-///|
-test {
-  let config = @moon_mutest.MutestConfig::default()
-  let plan = @moon_mutest.build_execution_plan(
-    [
-      @moon_mutest.source_file("src/a.mbt", "a == b && false"),
-      @moon_mutest.source_file("src/b.mbt", "x + y"),
-    ],
-    config,
-  )
-
-  let selected = @moon_mutest.select_executions(
-    plan,
-    Shard(shard_index=1, shard_count=2),
-  )
-  inspect(selected.length(), content="2")
-
-  let batches = @moon_mutest.build_selected_batch_plan(
-    plan,
-    FirstMutants(2),
-    OneMutantPerBatch,
-  )
-  inspect(batches.batch_count, content="2")
-
-  let script = @moon_mutest.generate_selected_runner_script(
-    plan,
-    FirstMutants(1),
-    BashDialect,
-  )
-  assert_true(script.content.contains("moon-mutest baseline"))
-}
-```
-
-这部分能力可以用于：
-
-- 把大型项目的 mutation run 拆成多个 CI 分片。
-- 只跑本次变更附近的 mutant。
-- 为 nightly job 生成批处理计划。
-- 给质量门禁提供稳定输入。
-
-## Workspace 文件选择
-
-默认只选择生产源码，跳过测试文件和生成文件。需要时可以显式打开这些选项。
-
-```mbt check
-///|
-test {
-  let files = [
-    @moon_mutest.source_file("src/lib.mbt", "a == b"),
-    @moon_mutest.source_file("src/lib_test.mbt", "test {}"),
-    @moon_mutest.source_file("_build/gen/out.mbt", "let x = 1"),
-  ]
-  let selected = @moon_mutest.select_workspace_files(
-    files,
-    @moon_mutest.WorkspaceFileSpec::moonbit_default(),
-  )
-  inspect(selected.length(), content="1")
-  inspect(selected[0].path, content="src/lib.mbt")
-}
-```
-
-## 质量门禁
-
-项目级报告可以接入质量门禁，用于 CI 中判断是否允许合并。
-
-```mbt check
-///|
-test {
-  let plan = @moon_mutest.plan_project([
-    @moon_mutest.source_file("src/a.mbt", "a == b"),
-  ])
-  let report = @moon_mutest.summarize_project_run(plan, [
-    @moon_mutest.project_result(plan.mutations[0], Killed),
-  ])
-  let gate = @moon_mutest.evaluate_quality_gate(
-    report,
-    @moon_mutest.QualityGate::default(),
-  )
-  inspect(@moon_mutest.quality_gate_status_label(gate.status), content="passed")
-}
-```
-
-质量门禁可以围绕这些指标设置：
-
-- 最低 mutation score。
-- 最多允许多少 survived mutants。
-- 是否允许 compile errors。
-- 是否允许 timeout。
-- 是否允许 skipped mutants。
-
-## 仓库结构
-
-根包是对外 facade，主要 re-export 各功能子包的公开 API。核心代码按职责拆分：
-
-- `core/`：扫描器、规则、过滤和 mutant 生成。
-- `io/`：manifest、JSON 和文本输出。
-- `plan/`：项目规划、workspace 文件选择。
-- `run/`：patch、执行计划、项目报告、baseline、脚本和质量门禁。
-- `runner/`：JS/Node workspace 复制、mutation 应用、进程执行和真实结果汇总。
-- `cmd/main/`：命令行入口。
-- `tests/`：黑盒测试，覆盖根包公开 API。
-- `docs/`：项目说明、比赛材料和仓库结构文档。
-
-更详细的结构说明见 `docs/repository_layout.md`。
-
-## 开发与验证
-
-推荐在提交前运行：
-
-```bash
-moon check --warn-list +73
-moon fmt --check
+moon fmt
 moon info
-moon check --target js --warn-list +73
-moon build
-moon test --warn-list +73
-moon test --target js --warn-list +73
+moon check --target all
+moon test --target all
+git diff --exit-code
 ```
 
-当前 `moon 0.1.20260703` 的 `moon fmt` 和 `moon info` 不支持 `--deny-warn` 参数。
-CI 中的步骤名称保留 `moon fmt --deny-warn` 和 `moon info --deny-warn`，但会先检测
-工具链是否支持该参数：支持时直接使用 `--deny-warn`，不支持时使用当前官方可用的
-`moon fmt --check`，并在 `moon info` 后检查 `pkg.generated.mbti` 是否产生未提交 diff。
+GitHub Actions 位于 `.github/workflows/ci.yml`，覆盖 `moon check`、`moon test`、
+`moon fmt`、`moon info`、CLI 示例、质量门禁和 HTML 报告。Gitlink 代码流水线可使用
+仓库根目录的 `Jenkinsfile`。
 
-发布到 mooncakes.io 前需要本机已有 MoonBit 登录凭据。发布检查和发布命令：
+当前 MoonBit 工具链若不支持 `moon fmt --deny-warn` 或 `moon info --deny-warn`，CI 会
+自动使用对应的最新可用命令，再通过 `git diff --exit-code` 验证格式与接口文件没有未提交改动。
 
-```bash
-moon publish --dry-run
-moon publish
-```
+## 边界与许可证
 
-如果出现 `failed to open credentials file`，需要先按 MoonBit 官方账号流程登录，再重新执行发布。
-
-根包和大部分规划、报告逻辑保持平台无关，方便测试。真实 workspace runner 依赖
-JS target，因为它需要调用 Node 的文件系统和子进程能力。
-
-## 比赛契合点
-
-本项目面向 MoonBit 国产开源生态建设，重点补充测试质量基础设施。它和现有
-`moon test`、`moon coverage` 的关系是互补的：
-
-- `moon test` 检查测试是否通过。
-- coverage 检查代码是否被执行。
-- `moon_mutest` 检查测试是否能发现被注入的语义缺陷。
-
-对于 CCF 开源创新大赛 / MoonBit 生态方向，这个项目的价值在于：
-
-- 主题明确，直接服务 MoonBit 工具链和开发者体验。
-- 技术路线有新意，不是简单包装已有命令。
-- 已经形成库、CLI、真实 runner、报告和质量门禁的完整闭环。
-- 可以继续扩展规则、CI 集成、增量运行和可视化报告。
-
-## 当前边界
-
-当前版本仍然保持 MVP 取向，规则以源码级保守替换为主。它不会尝试理解所有
-MoonBit 语义，也不会保证每个 mutant 都一定有业务意义。
-
-已知边界包括：
-
-- 复杂语法结构的语义级 mutation 仍需继续扩展。
-- 等价 mutant 需要通过规则优化和人工判断逐步减少。
-- 大型项目运行时间需要依赖分片、选择策略和 CI 缓存优化。
-- Windows、macOS、Linux 的进程行为还可以继续增加端到端覆盖。
-
-这些边界不会影响当前工具用于发现测试薄弱点，但后续仍有很明确的演进空间。
-
-## License
-
-Apache-2.0.
+- 当前 CLI 使用 JS/Node 后端执行真实 workspace；扫描与规划库支持 MoonBit 的常规后端。
+- 变异测试会增加 CI 时间，建议 PR 使用 `--changed-since` 与 `--first`，全量扫描放到 nightly。
+- Apache-2.0，见 [LICENSE](LICENSE)。

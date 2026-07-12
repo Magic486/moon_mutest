@@ -11,7 +11,7 @@
 
 name = "Magic486/moon_mutest"
 
-version = "0.1.3"
+version = "0.1.7"
 
 readme = "README.mbt.md"
 
@@ -28,5 +28,5 @@ import {
 }
 
 options(
-  exclude: [ ".github", "docs", "examples", "tests" ],
+  exclude: [ ".github", "Jenkinsfile", "docs", "examples", "tests" ],
 )
