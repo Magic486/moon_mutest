@@ -65,6 +65,15 @@ jobs:
           fi
           git diff --exit-code
 
+      - name: CLI scan example
+        shell: bash
+        run: |
+          moon run --target js cmd/main -- scan "a == b && true" | tee scan-report.txt
+          grep -q "total: 3" scan-report.txt
+          grep -q "eq-to-ne" scan-report.txt
+          grep -q "and-to-or" scan-report.txt
+          grep -q "true-to-false" scan-report.txt
+
       - name: Mutation quality gate example
         shell: bash
         run: |

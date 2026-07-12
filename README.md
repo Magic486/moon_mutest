@@ -86,7 +86,7 @@ import {
 
 然后可以直接调用公开 API：
 
-```mbt nocheck
+```mbt check
 ///|
 test {
   let manifest = @moon_mutest.manifest("a == b && true", file="demo.mbt")
